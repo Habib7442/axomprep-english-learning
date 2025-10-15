@@ -17,11 +17,44 @@ export default function OnboardingPage() {
   const [goals, setGoals] = useState<string[]>([])
   const [dailyGoal, setDailyGoal] = useState(20) // Default 20 minutes
 
+  console.log('Onboarding: user', user);
+
   // Redirect if user is not logged in
   useEffect(() => {
     if (!user) {
+      console.log('Onboarding: No user, redirecting to home');
       router.push('/')
     }
+  }, [user, router])
+
+  // Check if user has already completed onboarding
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      if (!user) return;
+      
+      console.log('Onboarding: Checking if already completed for user', user.id);
+      
+      try {
+        const supabase = createClient()
+        const { data: userData, error } = await supabase
+          .from('users')
+          .select('current_level, goal')
+          .eq('id', user.id)
+          .single()
+
+        console.log('Onboarding: User data from Supabase', userData);
+        console.log('Onboarding: Error from Supabase', error);
+
+        if (!error && userData?.current_level && userData?.goal) {
+          console.log('Onboarding: Already completed, redirecting to dashboard');
+          router.push('/dashboard')
+        }
+      } catch (error) {
+        console.error('Onboarding: Error checking status:', error)
+      }
+    }
+    
+    checkOnboardingStatus()
   }, [user, router])
 
   const handleLevelSelect = (selectedLevel: string) => {
@@ -63,6 +96,7 @@ export default function OnboardingPage() {
       
       if (error) throw error
       
+      console.log('Onboarding: Completed successfully, redirecting to dashboard');
       // Redirect to dashboard
       router.push('/dashboard')
     } catch (error) {

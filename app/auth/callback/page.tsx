@@ -34,9 +34,12 @@ export default function AuthCallbackPage() {
         return
       }
       
+      console.log('Auth callback: session', session);
+      
       if (session?.user) {
         // Update our auth store with the user
         setUser(session.user)
+        console.log('Auth callback: user set in store', session.user.id);
         
         // Check if user has completed onboarding
         const { data: userData, error: userError } = await supabase
@@ -45,21 +48,28 @@ export default function AuthCallbackPage() {
           .eq('id', session.user.id)
           .single()
         
+        console.log('Auth callback: user data from Supabase', userData);
+        console.log('Auth callback: user error from Supabase', userError);
+        
         // If user has no level set, redirect to onboarding
         if (!userError && (!userData?.current_level || !userData?.goal)) {
+          console.log('Auth callback: redirecting to onboarding');
           router.push('/onboarding')
         } else {
           // Check if we have a next parameter to redirect to a specific page
           const next = searchParams.get('next')
           if (next) {
+            console.log('Auth callback: redirecting to next parameter', next);
             router.push(next)
           } else {
             // Redirect to dashboard
+            console.log('Auth callback: redirecting to dashboard');
             router.push('/dashboard')
           }
         }
       } else {
         // No session, redirect to home
+        console.log('Auth callback: no session, redirecting to home');
         router.push('/')
       }
     }
