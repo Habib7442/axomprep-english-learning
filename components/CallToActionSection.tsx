@@ -29,7 +29,7 @@ export function CallToActionSection() {
           </h2>
           
           <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
-            Join thousands of high-performance students who are mastering their PDFs in record time. Upload your first document for free and feel the difference today.
+            Join students who are mastering their PDFs in record time. Upload your first document for free and feel the difference today.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
@@ -67,7 +67,7 @@ export function CallToActionSection() {
             </Button>
           </div>
           
-          <div className="mt-12 flex items-center justify-center gap-8 text-muted-foreground/60 font-bold tracking-widest text-xs uppercase">
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-muted-foreground/60 font-bold tracking-widest text-xs uppercase text-center">
             <span>No Credit Card</span>
             <div className="w-1.5 h-1.5 rounded-full bg-primary/30" />
             <span>Instant Access</span>

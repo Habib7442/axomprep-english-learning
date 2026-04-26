@@ -128,7 +128,7 @@ export function SignupDialog({ children }: { children: React.ReactNode }) {
       <DialogContent className="sm:max-w-[425px] bg-background/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl overflow-hidden p-8">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
         <DialogHeader className="relative z-10 text-center mb-6">
-          <DialogTitle className="text-3xl font-black text-white tracking-tight">
+          <DialogTitle className="text-3xl font-black text-foreground tracking-tight">
             Start <span className="text-primary italic">Talking</span>
           </DialogTitle>
           <DialogDescription className="text-muted-foreground font-medium">
@@ -230,7 +230,7 @@ export function SignupDialog({ children }: { children: React.ReactNode }) {
               </div>
               <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
                 <span className="bg-background/80 px-4 text-muted-foreground backdrop-blur-sm rounded-full">
-                  Or use google
+                  Or use Google
                 </span>
               </div>
             </div>

@@ -18,41 +18,56 @@ interface PlanFeatures {
   prioritySupport: boolean;
 }
 
-// Mock plan features based on user ID (in a real app, this would come from a database)
+// Get user's plan features based on their subscription tier in the database
 const getUserPlanFeatures = async (userId: string): Promise<PlanFeatures> => {
-  // This is a simplified mock implementation
-  // In a real app, you would check the user's subscription status in your database
-  const isProUser = userId.endsWith('pro'); // Simple mock logic
-  const isBasicUser = userId.endsWith('basic'); // Simple mock logic
-  
-  if (isProUser) {
+  try {
+    const supabase = await createClient();
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_tier')
+      .eq('id', userId)
+      .single();
+
+    const tier = profile?.subscription_tier || 'free';
+    
+    if (tier === 'enterprise' || tier === 'pro') {
+      return {
+        companionsLimit: 50,
+        interviewsPerMonth: 100,
+        resumeAnalysis: true,
+        advancedReporting: true,
+        prioritySupport: true
+      };
+    }
+    
+    if (tier === 'basic') {
+      return {
+        companionsLimit: 10,
+        interviewsPerMonth: 10,
+        resumeAnalysis: true,
+        advancedReporting: false,
+        prioritySupport: false
+      };
+    }
+    
+    // Free plan
     return {
-      companionsLimit: 50,
-      interviewsPerMonth: 100,
-      resumeAnalysis: true,
-      advancedReporting: true,
-      prioritySupport: true
+      companionsLimit: 1,
+      interviewsPerMonth: 2,
+      resumeAnalysis: false,
+      advancedReporting: false,
+      prioritySupport: false
     };
-  }
-  
-  if (isBasicUser) {
+  } catch (error) {
+    console.error("Error fetching user plan features:", error);
     return {
-      companionsLimit: 10,
-      interviewsPerMonth: 10,
-      resumeAnalysis: true,
+      companionsLimit: 1,
+      interviewsPerMonth: 2,
+      resumeAnalysis: false,
       advancedReporting: false,
       prioritySupport: false
     };
   }
-  
-  // Free plan
-  return {
-    companionsLimit: 1,
-    interviewsPerMonth: 2,
-    resumeAnalysis: false,
-    advancedReporting: false,
-    prioritySupport: false
-  };
 };
 
 // Check if user can start an interview based on their plan and usage
@@ -71,9 +86,9 @@ const canStartInterview = async (userId: string): Promise<boolean> => {
     // Check current session count for this month
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
     
-    const { data: sessions, error } = await supabase
-      .from('session_history')
-      .select('id', { count: 'exact' })
+    const { count, error } = await supabase
+      .from('chat_sessions')
+      .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .gte('created_at', startOfMonth);
 
@@ -82,10 +97,33 @@ const canStartInterview = async (userId: string): Promise<boolean> => {
       return false;
     }
 
-    const sessionCount = sessions?.length || 0;
+    const sessionCount = count || 0;
     return sessionCount < planFeatures.interviewsPerMonth;
   } catch (error) {
     console.error("Error in canStartInterview:", error);
+    return false;
+  }
+};
+
+// Check if user can add another companion (book)
+const canAddCompanion = async (userId: string): Promise<boolean> => {
+  try {
+    const supabase = await createClient();
+    const planFeatures = await getUserPlanFeatures(userId);
+    
+    const { count, error } = await supabase
+      .from('books')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error("Error checking companion count:", error);
+      return false;
+    }
+
+    return (count || 0) < planFeatures.companionsLimit;
+  } catch (error) {
+    console.error("Error in canAddCompanion:", error);
     return false;
   }
 };
@@ -97,8 +135,7 @@ const hasFeature = async (userId: string, feature: FeatureType): Promise<boolean
 
     switch (feature) {
       case 'companions_limit':
-        // This would check companion count in a real implementation
-        return true;
+        return await canAddCompanion(userId);
       case 'interviews_per_month':
         return await canStartInterview(userId);
       case 'resume_analysis':

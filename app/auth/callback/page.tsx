@@ -53,7 +53,8 @@ function AuthCallback() {
         
         // Check if we have a next parameter to redirect to a specific page
         const next = searchParams.get('next')
-        if (next) {
+        // Only allow relative URLs to prevent open redirect attacks
+        if (next && next.startsWith('/') && !next.startsWith('//')) {
           console.log('Auth callback: redirecting to next parameter', next);
           router.push(next)
         } else {

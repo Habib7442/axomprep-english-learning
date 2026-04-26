@@ -18,6 +18,7 @@ export async function createBook(data: {
     return { success: false, error: "Unauthorized" };
   }
 
+  let createdBookId: string | null = null;
   try {
     // 1. Save Book to Database
     const { data: bookData, error: bookError } = await supabase
@@ -33,6 +34,7 @@ export async function createBook(data: {
       .single();
 
     if (bookError) throw bookError;
+    createdBookId = bookData.id;
 
     // 2. Save Segments for RAG
     const segmentsToInsert = data.segments.map((seg, idx) => ({
@@ -52,6 +54,13 @@ export async function createBook(data: {
     return { success: true, data: bookData };
   } catch (error: any) {
     console.error('Error in createBook action:', error);
+    
+    // Cleanup: Delete the book record if segments failed to insert
+    if (createdBookId) {
+      console.log('Cleaning up orphaned book record:', createdBookId);
+      await supabase.from('books').delete().eq('id', createdBookId);
+    }
+
     return { success: false, error: error.message };
   }
 }
@@ -65,6 +74,14 @@ export async function deleteBookAction(bookId: string) {
   }
 
   try {
+    // 1. Delete associated segments first
+    await supabase
+      .from('book_segments')
+      .delete()
+      .eq('book_id', bookId)
+      .eq('user_id', user.id);
+
+    // 2. Delete the book
     const { error } = await supabase
       .from('books')
       .delete()
@@ -93,6 +110,7 @@ export async function fetchBooksAction() {
     const { data, error } = await supabase
       .from('books')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;

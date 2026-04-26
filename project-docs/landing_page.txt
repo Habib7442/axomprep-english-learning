@@ -35,7 +35,7 @@ Nice logo! That **teal/cyan on black** is a strong, modern combination. Here's e
 
 ### Section 2 — HERO (Most Important)
 **Headline:** *"Stop Reading Your PDFs. Start Talking to Them."*
-**Subheadline:** *Upload any PDF and have a real voice conversation with it — in Hindi or English. Ask questions, get quizzed, debate your notes.*
+**Subheadline:** *Upload any PDF and have a real voice conversation with it. Ask questions, get quizzed, debate your notes.*
 
 - Big teal CTA button: **"Talk to Your PDF — It's Free"**
 - Below CTA: small trust line — *"No credit card. No app download. Works in your browser."*
@@ -46,8 +46,8 @@ Nice logo! That **teal/cyan on black** is a strong, modern combination. Here's e
 
 ### Section 3 — SOCIAL PROOF BAR
 One thin dark strip with:
-- "Trusted by 500+ students" (once you have it)
-- Logos or text: UPSC Prep • NEET • JEE • MBA • Law
+- "Join students preparing for UPSC • NEET • JEE • MBA • Law"
+- Or "Used by exam prep students across India"
 - Or a single powerful quote from a beta user
 
 ---
@@ -67,7 +67,7 @@ Each step has a teal icon, bold number, and 1-line description. Simple. No clutt
 Three dark cards side by side, each with a teal top border glow:
 
 **🎓 Tutor Mode**
-*"Ask anything from your PDF. Get clear explanations in Hindi or English."*
+*"Ask anything from your PDF. Get clear explanations instantly."*
 
 **⚡ Exam Panic Mode**
 *"Exam in 2 hours? Get rapid-fire questions, timed drills, instant scores."*
@@ -77,15 +77,12 @@ Three dark cards side by side, each with a teal top border glow:
 
 ---
 
-### Section 6 — HINDI / REGIONAL USP SECTION
+### Section 6 — GLOBAL ACCESSIBILITY
 Full-width dark section with teal accent line on left:
 
-**Headline:** *"India ka pehla voice PDF tutor — Hindi mein"*
-*(India's first voice PDF tutor — in Hindi)*
+**Headline:** *"The world's first voice PDF tutor"*
 
-Subtext: *"Every other AI tool speaks English. We speak your language. UPSC, NEET, JEE — sab Hindi mein samjho."*
-
-This section will resonate deeply and drive shares in Indian study communities.
+Subtext: *"Every other AI tool makes you read. We make you talk. UPSC, NEET, JEE — master any subject through real-time conversation."*
 
 ---
 
@@ -99,8 +96,8 @@ This section will resonate deeply and drive shares in Indian study communities.
 ### Section 8 — PRICING
 Three cards on dark background:
 
-- **Free** — ₹0 — 3 PDFs, 5 min/day, English only
-- **Student** — ₹199/mo — 20 PDFs, 30 min/day, Hindi + English ← Highlight this with teal glow border
+- **Free** — ₹0 — 3 PDFs, 5 min/day
+- **Student** — ₹199/mo — 20 PDFs, 30 min/day ← Highlight this with teal glow border
 - **Pro** — ₹499/mo — Unlimited, all modes, summary export
 
 Below pricing: *"Students in Tier 2 cities deserve the best AI tools too."* — emotional hook.
@@ -110,7 +107,7 @@ Below pricing: *"Students in Tier 2 cities deserve the best AI tools too."* — 
 ### Section 9 — TESTIMONIALS (After Beta)
 2–3 cards on dark charcoal background:
 - Student photo (or avatar) + name + exam they're preparing for
-- One powerful quote about how Debate Mode or Hindi mode helped them
+- One powerful quote about how Debate Mode or Tutor mode helped them
 - Star rating in teal
 
 ---
@@ -119,7 +116,7 @@ Below pricing: *"Students in Tier 2 cities deserve the best AI tools too."* — 
 Full-width black section, centered:
 
 **Big headline:** *"Your PDF is waiting to be heard."*
-**Sub:** *"Join thousands of students who study smarter with voice AI."*
+**Sub:** *"Join students who study smarter with voice AI."*
 **Button:** "Start Talking Free" — large, teal, with a subtle pulse animation
 
 ---

@@ -2467,7 +2467,7 @@ College leaderboard → Students compete → Word spreads in college → More st
 ### 8.5 Future Roadmap (Year 2+)
 
 **Potential Features:**
-- Other Indian languages (Bengali, Hindi, Tamil)
+- Global English accent support (UK, US, Australian)
 - IELTS/TOEFL specific prep
 - Business English specialization
 - Video-based practice (not just voice)

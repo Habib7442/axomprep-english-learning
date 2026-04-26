@@ -108,7 +108,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
       <DialogContent className="sm:max-w-[425px] bg-background/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl overflow-hidden p-8">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
         <DialogHeader className="relative z-10 text-center mb-6">
-          <DialogTitle className="text-3xl font-black text-white tracking-tight">
+          <DialogTitle className="text-3xl font-black text-foreground tracking-tight">
             Welcome <span className="text-primary italic">Back</span>
           </DialogTitle>
           <DialogDescription className="text-muted-foreground font-medium">
@@ -130,12 +130,12 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[#374151] dark:text-gray-200">Email</FormLabel>
+                  <FormLabel className="text-foreground/70">Email</FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="your@email.com" 
                       {...field} 
-                      className="bg-white/5 border-white/10 focus:border-primary focus:ring-primary text-white placeholder:text-muted-foreground/50"
+                      className="bg-white/5 border-white/10 focus:border-primary focus:ring-primary text-foreground placeholder:text-muted-foreground/50"
                     />
                   </FormControl>
                   <FormMessage />
@@ -148,13 +148,13 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[#374151] dark:text-gray-200">Password</FormLabel>
+                  <FormLabel className="text-foreground/70">Password</FormLabel>
                   <FormControl>
                     <Input 
                       type="password" 
                       placeholder="••••••••" 
                       {...field} 
-                      className="bg-white/5 border-white/10 focus:border-primary focus:ring-primary text-white"
+                      className="bg-white/5 border-white/10 focus:border-primary focus:ring-primary text-foreground"
                     />
                   </FormControl>
                   <FormMessage />
@@ -168,7 +168,10 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
               className="w-full bg-primary text-black hover:bg-accent font-black h-12 rounded-xl transition-all shadow-[0_0_15px_rgba(0,181,181,0.2)]"
             >
               {isLoading ? (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                <>
+                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                  Logging in...
+                </>
               ) : (
                 'Login'
               )}
@@ -180,7 +183,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
               </div>
               <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
                 <span className="bg-background/80 px-4 text-muted-foreground backdrop-blur-sm rounded-full">
-                  Or use google
+                  Or use Google
                 </span>
               </div>
             </div>

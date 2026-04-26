@@ -30,7 +30,7 @@ const plans = [
     features: [
       "20 PDFs total",
       "30 min voice time/day",
-      "All 3 Modes (Tutor + Panic + Debate)",
+      "Tutor & Panic Modes",
       "High-quality AI voices",
       "Detailed mastery analytics"
     ],
@@ -44,9 +44,9 @@ const plans = [
     description: "For serious researchers",
     features: [
       "Unlimited PDFs",
-      "Unlimited voice time",
+      "2 hrs voice time/day",
+      "All Modes (inc. Debate)",
       "AI summary exports",
-      "Early access to new features",
       "Priority support"
     ],
     cta: "Go Pro",
@@ -91,6 +91,7 @@ export function PricingSection() {
                   : "bg-card/50 border border-white/5"
               }`}
             >
+              <CurrentPlanBadge planName={plan.name} />
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-black text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
                   Best Value
@@ -136,6 +137,22 @@ export function PricingSection() {
         </motion.div>
       </div>
     </section>
+  );
+}
+
+function CurrentPlanBadge({ planName }: { planName: string }) {
+  const { profile } = useAuthStore();
+  const isCurrentPlan = profile?.subscription_tier?.toLowerCase() === planName.toLowerCase();
+
+  if (!isCurrentPlan) return null;
+
+  return (
+    <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
+      <div className="bg-accent text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-xl animate-bounce">
+        Your Current Plan
+      </div>
+      <div className="w-1 h-3 bg-accent rounded-full" />
+    </div>
   );
 }
 

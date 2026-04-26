@@ -42,9 +42,18 @@ export const splitIntoSegments = (
   return segments;
 };
 
-export async function parsePDFFile(file: File) {
+export async function parsePDFFile(
+  file: File,
+  onProgress?: (msg: string) => void,
+  maxOCRPageLimit: number = 20,
+): Promise<{ content: TextSegment[]; cover: string }> {
+  if (typeof window === "undefined") {
+    throw new Error("parsePDFFile can only be called in a browser environment");
+  }
+
   try {
     const pdfjsLib = await import("pdfjs-dist");
+    const { createWorker } = await import("tesseract.js");
 
     if (typeof window !== "undefined") {
       pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -69,6 +78,7 @@ export async function parsePDFFile(file: File) {
 
     await firstPage.render({
       canvas: canvas,
+      canvasContext: context,
       viewport: viewport,
     }).promise;
 
@@ -76,6 +86,8 @@ export async function parsePDFFile(file: File) {
 
     // Extract text from all pages
     let fullText = "";
+    onProgress?.("Extracting text layers...");
+    
     for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
       const page = await pdfDocument.getPage(pageNum);
       const textContent = await page.getTextContent();
@@ -84,6 +96,55 @@ export async function parsePDFFile(file: File) {
         .map((item) => (item as { str: string }).str)
         .join(" ");
       fullText += pageText + "\n";
+    }
+
+    // Fallback to OCR if text is suspicious (less than 50 chars per page on average)
+    const textDensity = fullText.trim().length / pdfDocument.numPages;
+    if (textDensity < 50) {
+      console.log("Low text density detected, switching to OCR mode...");
+      onProgress?.("Scanned PDF detected. Initializing OCR...");
+      
+      fullText = ""; // Clear the empty text layers
+      
+      if (pdfDocument.numPages > maxOCRPageLimit) {
+        throw new Error(`OCR is limited to ${maxOCRPageLimit} pages for your current plan. This PDF has ${pdfDocument.numPages} pages.`);
+      }
+
+      const worker = await createWorker("eng", 1, {
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            onProgress?.(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+          }
+        }
+      });
+
+      for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
+        onProgress?.(`Running OCR on page ${pageNum} of ${pdfDocument.numPages}...`);
+        const page = await pdfDocument.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 2 });
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        
+        if (context) {
+          await page.render({
+            canvas: canvas,
+            canvasContext: context,
+            viewport: viewport,
+          }).promise;
+
+          const { data: { text } } = await worker.recognize(canvas);
+          fullText += text + "\n";
+        }
+      }
+      
+      await worker.terminate();
+    }
+
+    if (fullText.trim().length === 0) {
+      throw new Error("No text content could be extracted from this PDF, even with OCR.");
     }
 
     const segments = splitIntoSegments(fullText);
@@ -105,9 +166,13 @@ export const voices = {
   female: { casual: "ZIlrSGI4jZqobxRKprJz", formal: "sarah" },
 };
 
-export const configureAssistant = (voice: string = "female", style: string = "casual") => {
+export const configureAssistant = (
+  voice: "male" | "female" = "female", 
+  voiceStyle: "casual" | "formal" = "casual",
+  mode: "tutor" | "panic" | "debate" = "tutor"
+) => {
   const voiceId =
-    (voices as any)[voice]?.[style] || "sarah";
+    voices[voice]?.[voiceStyle] || "sarah";
 
   const modePrompts = {
     tutor: "You are a helpful tutor. Explain concepts from the provided material. Be conversational, encouraging, and ask the student if they understand before moving to the next point.",
@@ -115,7 +180,7 @@ export const configureAssistant = (voice: string = "female", style: string = "ca
     debate: "You are a sharp debater who DISAGREES with the core points. Challenge the student's understanding. Make them defend the material. Be professional but adversarial."
   };
 
-  const systemPrompt = (modePrompts as any)[style] || modePrompts.tutor;
+  const systemPrompt = modePrompts[mode];
 
   const vapiAssistant: CreateAssistantDTO = {
     name: "Companion",

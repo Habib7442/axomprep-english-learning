@@ -22,6 +22,7 @@ const VoiceSelector = ({ value, onChange, disabled, className }: VoiceSelectorPr
                     <div className="voice-selector-options">
                         {voiceCategories.male.map((voiceId) => {
                             const voice = voiceOptions[voiceId as keyof typeof voiceOptions];
+                            if (!voice) return null;
                             const isSelected = value === voiceId;
                             return (
                                 <Label
@@ -59,6 +60,7 @@ const VoiceSelector = ({ value, onChange, disabled, className }: VoiceSelectorPr
                     <div className="voice-selector-options">
                         {voiceCategories.female.map((voiceId) => {
                             const voice = voiceOptions[voiceId as keyof typeof voiceOptions];
+                            if (!voice) return null;
                             const isSelected = value === voiceId;
                             return (
                                 <Label

@@ -39,7 +39,7 @@ export function TestimonialsSection() {
           className="text-center mb-20"
         >
           <h2 className="text-3xl md:text-4xl font-black mb-6 text-white">
-            Trusted by <span className="text-primary tracking-tight">thousands</span> of students
+            Loved by <span className="text-primary tracking-tight">students</span> across India
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             From UPSC aspirants to Medical students, IntegratePDF is changing how India studies.

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -9,6 +10,14 @@ import { SignupDialog } from "./auth/SignupDialog";
 
 export function HeroSection() {
   const { user } = useAuthStore();
+  
+  const barAnimations = useMemo(
+    () => Array.from({ length: 12 }, () => ({
+      duration: 1 + Math.random(),
+      delay: Math.random(),
+    })),
+    []
+  );
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
@@ -100,14 +109,14 @@ export function HeroSection() {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/5 group-hover:to-primary/10 transition-colors" />
             <div className="flex flex-col items-center gap-4 text-primary/40 group-hover:text-primary/60 transition-colors">
               <div className="flex gap-1 items-end h-12">
-                {[...Array(12)].map((_, i) => (
+                {barAnimations.map((anim, i) => (
                   <motion.div
                     key={i}
                     animate={{ height: [10, 40, 10] }}
                     transition={{ 
                       repeat: Infinity, 
-                      duration: 1 + Math.random(),
-                      delay: Math.random() 
+                      duration: anim.duration,
+                      delay: anim.delay 
                     }}
                     className="w-1.5 bg-current rounded-full"
                   />

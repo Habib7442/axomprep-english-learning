@@ -55,7 +55,17 @@ const FileUploader = <T extends FieldValues>({
                         'upload-dropzone border-2 border-dashed border-[#8B7355]/20',
                         isUploaded && 'upload-dropzone-uploaded'
                     )}
+                    role="button"
+                    tabIndex={disabled ? -1 : 0}
                     onClick={() => !disabled && inputRef.current?.click()}
+                    onKeyDown={(e) => {
+                        if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
+                            e.preventDefault();
+                            inputRef.current?.click();
+                        }
+                    }}
+                    aria-label={isUploaded ? `Uploaded file: ${(value as File).name}` : placeholder}
+                    aria-disabled={disabled}
                 >
                     <input
                         type="file"

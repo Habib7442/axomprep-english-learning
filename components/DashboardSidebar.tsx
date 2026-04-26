@@ -38,12 +38,12 @@ const libraryItems = [
   },
   {
     title: "Upload PDF",
-    url: "/dashboard",
+    url: "/dashboard", // TODO: Implement dedicated upload page if needed
     icon: PlusCircleIcon,
   },
   {
     title: "Session History",
-    url: "/dashboard",
+    url: "/dashboard", // TODO: Implement session history page
     icon: HistoryIcon,
   },
 ]
@@ -56,7 +56,7 @@ const accountItems = [
   },
   {
     title: "Settings",
-    url: "/dashboard",
+    url: "/dashboard", // TODO: Implement settings page
     icon: SettingsIcon,
   },
 ]

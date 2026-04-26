@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS interview_reports (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  session_id UUID REFERENCES session_history(id) ON DELETE CASCADE,
+  session_id UUID REFERENCES chat_sessions(id) ON DELETE CASCADE,
   interview_type TEXT NOT NULL,
   topic TEXT,
   job_description TEXT,
@@ -38,7 +38,8 @@ CREATE POLICY "Users can insert their own interview reports"
 CREATE POLICY "Users can update their own interview reports" 
   ON interview_reports 
   FOR UPDATE 
-  USING (auth.uid() = user_id);
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 -- Grant permissions
 GRANT ALL ON interview_reports TO authenticated;

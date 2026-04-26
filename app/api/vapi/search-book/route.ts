@@ -4,6 +4,11 @@ import { createClient } from '@/lib/supabase/server';
 // This API route handles Vapi tool calls for searching book segments
 // It uses PostgreSQL Full-Text Search implemented in Supabase
 
+// Escape special LIKE pattern characters
+function escapeLikePattern(str: string): string {
+  return str.replace(/[%_\\]/g, '\\$&');
+}
+
 async function processBookSearch(bookId: string, query: string) {
   if (!bookId || !query) {
     return { result: 'Missing bookId or query' };
@@ -29,7 +34,7 @@ async function processBookSearch(bookId: string, query: string) {
       .from('book_segments')
       .select('content')
       .eq('book_id', bookId)
-      .ilike('content', `%${query}%`)
+      .ilike('content', `%${escapeLikePattern(query)}%`)
       .limit(3);
 
     if (fallbackError || !fallbackData || fallbackData.length === 0) {
@@ -57,10 +62,16 @@ export async function POST(request: Request) {
       const functionCall = body?.message?.functionCall;
       if (functionCall) {
         const { name, parameters } = functionCall;
-        const args = typeof parameters === 'string' ? JSON.parse(parameters) : parameters;
+        let args = parameters || {};
+        if (typeof parameters === 'string') {
+          try { args = JSON.parse(parameters); } catch { args = {}; }
+        }
         
         if (name === 'searchBook') {
-          const result = await processBookSearch(args.bookId, args.query);
+          const result = await processBookSearch(
+            String(args?.bookId ?? ''),
+            String(args?.query ?? '')
+          );
           return NextResponse.json(result);
         }
       }
@@ -71,10 +82,16 @@ export async function POST(request: Request) {
     for (const toolCall of toolCalls) {
       const { id, function: func } = toolCall;
       const name = func?.name;
-      const args = typeof func?.arguments === 'string' ? JSON.parse(func?.arguments) : func?.arguments;
+      let args = func?.arguments || {};
+      if (typeof func?.arguments === 'string') {
+        try { args = JSON.parse(func.arguments); } catch { args = {}; }
+      }
 
       if (name === 'searchBook') {
-        const searchResult = await processBookSearch(args.bookId, args.query);
+        const searchResult = await processBookSearch(
+          String(args?.bookId ?? ''),
+          String(args?.query ?? '')
+        );
         results.push({ toolCallId: id, ...searchResult });
       } else {
         results.push({ toolCallId: id, result: `Unknown function: ${name}` });

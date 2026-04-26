@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { createClient } from '@/lib/supabase/client'
@@ -15,6 +15,7 @@ import {
   GraduationCap, 
   Zap, 
   Sword,
+  Lock,
   MessageSquare,
   Sparkles
 } from 'lucide-react'
@@ -38,6 +39,19 @@ export default function ChatPage() {
   const [vapi, setVapi] = useState<Vapi | null>(null)
   const [callDuration, setCallDuration] = useState(0)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
+
+  // Use refs to avoid stale closures in Vapi event handlers
+  const transcriptRef = useRef(transcript)
+  const callDurationRef = useRef(callDuration)
+
+  useEffect(() => {
+    transcriptRef.current = transcript
+  }, [transcript])
+
+  useEffect(() => {
+    callDurationRef.current = callDuration
+  }, [callDuration])
   const { profile } = useAuthStore()
 
   const supabase = createClient()
@@ -95,25 +109,61 @@ export default function ChatPage() {
     }
   }
 
+  const toggleMute = () => {
+    if (vapi) {
+      vapi.setMuted(!isMuted)
+      setIsMuted(!isMuted)
+    }
+  }
+
+  const stopSession = () => {
+    vapi?.stop()
+  }
+
+  const saveSession = async () => {
+    if (!user || transcriptRef.current.length === 0) return
+
+    console.log('Saving session to Supabase...', {
+      duration: callDurationRef.current,
+      messages: transcriptRef.current.length
+    });
+
+    try {
+      const { error } = await supabase
+        .from('chat_sessions')
+        .insert({
+          user_id: user.id,
+          book_id: bookId,
+          mode: selectedMode,
+          duration: callDurationRef.current,
+          transcript: transcriptRef.current
+        });
+
+      if (error) throw error
+      console.log('Session history saved')
+    } catch (error) {
+      console.error('Error saving session history:', error)
+    }
+  }
+
+  // Separate effect for Vapi event listeners
   useEffect(() => {
-    vapi?.on('call-start', () => {
+    if (!vapi) return
+
+    const handleCallStart = () => {
       console.log('Call started successfully')
       setCallStatus('active')
       setIsCalling(true)
-    })
+    }
 
-    vapi?.on('call-end', () => {
+    const handleCallEnd = () => {
       console.log('Call ended')
       setCallStatus('idle')
       setIsCalling(false)
       saveSession()
-    })
+    }
 
-    vapi?.on('speech-start', () => {
-      console.log('Assistant started speaking')
-    })
-
-    vapi?.on('message', (message: any) => {
+    const handleMessage = async (message: any) => {
       console.log('Vapi message:', message.type, message);
       
       if (message.type === 'transcript') {
@@ -124,9 +174,17 @@ export default function ChatPage() {
 
       if (message.type === 'tool-calls') {
         console.log('Handling client-side tool call:', message.toolCallList);
-        message.toolCallList.forEach(async (toolCall: any) => {
+        for (const toolCall of message.toolCallList) {
           if (toolCall.function.name === 'searchBook') {
             try {
+              let parsedArgs = {};
+              try {
+                parsedArgs = JSON.parse(toolCall.function.arguments);
+              } catch (e) {
+                console.error('Failed to parse tool arguments:', e);
+                continue;
+              }
+
               const response = await fetch('/api/vapi/search-book', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -136,7 +194,7 @@ export default function ChatPage() {
                       function: {
                         ...toolCall.function,
                         arguments: JSON.stringify({
-                          ...JSON.parse(toolCall.function.arguments),
+                          ...parsedArgs,
                           bookId: bookId // Auto-inject the current bookId
                         })
                       }
@@ -161,22 +219,37 @@ export default function ChatPage() {
               });
             }
           }
-        });
+        }
       }
-    })
+    }
 
-    vapi?.on('error', (e: any) => {
+    const handleError = (e: any) => {
       console.error('Vapi detailed error:', e);
       setCallStatus('error')
       alert('Vapi error: ' + (e.message || JSON.stringify(e)))
-    })
+    }
 
+    vapi.on('call-start', handleCallStart)
+    vapi.on('call-end', handleCallEnd)
+    vapi.on('message', handleMessage)
+    vapi.on('error', handleError)
+
+    return () => {
+      vapi.off('call-start', handleCallStart)
+      vapi.off('call-end', handleCallEnd)
+      vapi.off('message', handleMessage)
+      vapi.off('error', handleError)
+    }
+  }, [vapi, bookId]) // bookId used in handleMessage
+
+  // Separate effect for the 5-minute timer
+  useEffect(() => {
     let interval: any;
-    if (callStatus === 'active' && profile?.subscription_tier === 'free') {
+    if (vapi && callStatus === 'active' && profile?.subscription_tier === 'free') {
       interval = setInterval(() => {
         setCallDuration(prev => {
           if (prev >= 300) { // 5 minutes (300 seconds)
-            vapi?.stop();
+            vapi.stop();
             setShowUpgradeModal(true);
             clearInterval(interval);
             return prev;
@@ -185,12 +258,20 @@ export default function ChatPage() {
         });
       }, 1000);
     }
-
     return () => {
-      vapi?.stop()
       if (interval) clearInterval(interval);
     }
   }, [vapi, callStatus, profile])
+
+  // Cleanup on unmount only
+  useEffect(() => {
+    return () => {
+      if (vapi) {
+        vapi.stop()
+      }
+    }
+  }, [vapi])
+
 
   const startSession = async () => {
     if (!vapi || !user) {
@@ -208,11 +289,17 @@ export default function ChatPage() {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       
-      const { data: sessions } = await supabase
+      const { data: sessions, error: sessionsError } = await supabase
         .from('chat_sessions')
         .select('duration')
         .eq('user_id', user.id)
         .gte('created_at', today.toISOString())
+
+      if (sessionsError) {
+        console.error('Error checking usage:', sessionsError)
+        alert('Unable to verify usage limits. Please try again.')
+        return
+      }
 
       const totalDuration = sessions?.reduce((acc, s) => acc + (s.duration || 0), 0) || 0
       
@@ -220,6 +307,20 @@ export default function ChatPage() {
         setShowUpgradeModal(true)
         return
       }
+
+      // Block restricted modes for Free tier
+      if (selectedMode !== 'tutor') {
+        alert('Panic and Debate modes are only available on Student and Pro plans.')
+        router.push('/pricing')
+        return
+      }
+    }
+
+    // Check restricted modes for Student tier
+    if (profile?.subscription_tier === 'student' && selectedMode === 'debate') {
+      alert('Debate mode is only available on the Pro plan.')
+      router.push('/pricing')
+      return
     }
 
     if (segments.length === 0) {
@@ -233,7 +334,7 @@ export default function ChatPage() {
     // Construct PDF context from segments
     const pdfContent = segments.map(s => s.content).join('\n\n')
     
-    const assistant = configureAssistant("female", selectedMode);
+    const assistant = configureAssistant("female", "casual", selectedMode);
     
     // Add the search tool to the assistant model
     if (assistant.model) {
@@ -289,37 +390,14 @@ export default function ChatPage() {
     }
   }
 
-  const saveSession = async () => {
-    if (!user || transcript.length === 0) return
-
-    try {
-      const { error } = await supabase
-        .from('chat_sessions')
-        .insert({
-          user_id: user.id,
-          book_id: bookId,
-          transcript: transcript,
-          duration: callDuration,
-          mode: selectedMode
-        })
-
-      if (error) throw error
-      console.log('Session history saved')
-    } catch (error) {
-      console.error('Error saving session history:', error)
-    }
-  }
-
-  const stopSession = () => {
-    vapi?.stop()
-  }
 
   if (isLoading || authLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center" role="status" aria-live="polite" aria-busy="true">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
           <p className="text-muted-foreground font-medium">Preparing your session...</p>
+          <span className="sr-only">Preparing your conversation session, please wait...</span>
         </div>
       </div>
     )
@@ -357,35 +435,82 @@ export default function ChatPage() {
               className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8"
             >
               {[
-                { id: 'tutor', name: 'Tutor Mode', icon: GraduationCap, color: 'primary', desc: 'Patient explanations & guided learning' },
-                { id: 'panic', name: 'Exam Panic', icon: Zap, color: 'accent', desc: 'Rapid-fire drills & high-pressure recall' },
-                { id: 'debate', name: 'Debate Mode', icon: Sword, color: 'primary', desc: 'Defend your notes against an AI adversary' }
-              ].map((mode) => (
-                <button
-                  key={mode.id}
-                  onClick={() => setSelectedMode(mode.id as Mode)}
-                  className={`group relative flex flex-col p-8 rounded-[2rem] border-2 transition-all duration-500 text-left backdrop-blur-md ${
-                    selectedMode === mode.id 
-                      ? 'bg-primary/20 border-primary shadow-[0_0_50px_rgba(0,181,181,0.25)]' 
-                      : 'bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10'
-                  }`}
-                >
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${
-                    selectedMode === mode.id ? 'bg-primary text-black shadow-[0_0_20px_rgba(0,181,181,0.5)]' : 'bg-white/5 text-muted-foreground'
-                  }`}>
-                    <mode.icon className="h-8 w-8" />
-                  </div>
-                  <h3 className="text-2xl font-black text-white mb-2">{mode.name}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {mode.desc}
-                  </p>
-                </button>
-              ))}
+                { 
+                  id: 'tutor', 
+                  name: 'Tutor Mode', 
+                  icon: GraduationCap, 
+                  color: 'primary', 
+                  desc: 'Patient explanations & guided learning',
+                  minTier: 'free'
+                },
+                { 
+                  id: 'panic', 
+                  name: 'Exam Panic', 
+                  icon: Zap, 
+                  color: 'accent', 
+                  desc: 'Rapid-fire drills & high-pressure recall',
+                  minTier: 'student'
+                },
+                { 
+                  id: 'debate', 
+                  name: 'Debate Mode', 
+                  icon: Sword, 
+                  color: 'primary', 
+                  desc: 'Defend your notes against an AI adversary',
+                  minTier: 'pro'
+                }
+              ].map((mode) => {
+                const tierRank: Record<string, number> = { 'free': 0, 'student': 1, 'pro': 2 };
+                const userTierRank = tierRank[profile?.subscription_tier || 'free'];
+                const modeTierRank = tierRank[mode.minTier];
+                const isLocked = userTierRank < modeTierRank;
+
+                return (
+                  <button
+                    key={mode.id}
+                    onClick={() => {
+                      if (isLocked) {
+                        router.push('/pricing');
+                      } else {
+                        setSelectedMode(mode.id as Mode);
+                      }
+                    }}
+                    className={`group relative flex flex-col p-8 rounded-[2rem] border-2 transition-all duration-500 text-left backdrop-blur-md ${
+                      isLocked ? 'opacity-70 grayscale-[0.5] cursor-pointer hover:bg-white/5' : ''
+                    } ${
+                      selectedMode === mode.id && !isLocked
+                        ? 'bg-primary/20 border-primary shadow-[0_0_50px_rgba(0,181,181,0.25)]' 
+                        : 'bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10'
+                    }`}
+                  >
+                    {isLocked && (
+                      <div className="absolute top-6 right-6 text-muted-foreground/40">
+                        <Lock className="h-5 w-5" />
+                      </div>
+                    )}
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${
+                      selectedMode === mode.id && !isLocked ? 'bg-primary text-black shadow-[0_0_20px_rgba(0,181,181,0.5)]' : 'bg-white/5 text-muted-foreground'
+                    }`}>
+                      <mode.icon className="h-8 w-8" />
+                    </div>
+                    <h3 className="text-2xl font-black text-white mb-2">{mode.name}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {mode.desc}
+                    </p>
+                    {isLocked && (
+                      <div className="mt-4 text-[10px] font-black uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                        Upgrade to Unlock
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
 
               <div className="md:col-span-3 mt-8 flex flex-col items-center">
                 <Button 
                   onClick={startSession}
                   disabled={callStatus === 'loading'}
+                  aria-label={callStatus === 'loading' ? 'Preparing session' : 'Start voice study session'}
                   className="bg-primary text-black hover:bg-accent font-black h-20 px-16 text-2xl rounded-3xl shadow-[0_0_30px_rgba(0,181,181,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 group"
                 >
                   {callStatus === 'loading' ? (
@@ -480,14 +605,21 @@ export default function ChatPage() {
                 <Button 
                   onClick={stopSession}
                   variant="destructive"
+                  aria-label="End voice session"
                   className="h-16 w-16 rounded-full bg-red-500/20 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)]"
                 >
                   <PhoneOff className="h-6 w-6" />
                 </Button>
                 <Button 
-                  className="h-16 w-16 rounded-full bg-white/5 text-white border border-white/10 hover:bg-white/10 transition-all"
+                  onClick={toggleMute}
+                  aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
+                  className={`h-16 w-16 rounded-full border transition-all ${
+                    isMuted 
+                      ? 'bg-red-500/20 text-red-500 border-red-500/30' 
+                      : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                  }`}
                 >
-                  <MicOff className="h-6 w-6" />
+                  {isMuted ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
                 </Button>
               </div>
             </motion.div>

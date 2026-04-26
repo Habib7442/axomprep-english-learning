@@ -10,9 +10,9 @@
 
 ## 1. Executive Summary
 
-**integratepdf.com** is a voice-first AI study platform that lets students upload any PDF and have a real, two-way spoken conversation with its content — in Hindi or English. Unlike existing tools (AskYourPDF, Speechify, StudyPDF) that are text-chat or one-way audio, integratepdf.com is the first product to offer **real-time voice conversation with a PDF document**, powered by Vapi's in-browser WebRTC voice agent.
+**integratepdf.com** is a voice-first AI study platform that lets students upload any PDF and have a real, two-way spoken conversation with its content. Unlike existing tools (AskYourPDF, Speechify, StudyPDF) that are text-chat or one-way audio, integratepdf.com is the first product to offer **real-time voice conversation with a PDF document**, powered by Vapi's in-browser WebRTC voice agent.
 
-**Primary market:** Indian students (UPSC, NEET, JEE, board exams) in Tier 1–3 cities.  
+**Primary market:** Students (UPSC, NEET, JEE, board exams) preparing for competitive exams.  
 **Secondary market:** Global English-speaking students and professionals.
 
 ---
@@ -25,7 +25,7 @@ Students have millions of PDFs — textbooks, notes, research papers — but no 
 - **Text-to-speech tools** → it reads at you
 - **AI chat tools (AskYourPDF, ChatPDF)** → text only, no voice
 
-**The core problem:** Students learn better through conversation, but no tool lets them *talk* to their study material in real-time voice, especially in Hindi or regional languages.
+**The core problem:** Students learn better through conversation, but no tool lets them *talk* to their study material in real-time voice to master complex subjects.
 
 ---
 
@@ -54,7 +54,7 @@ Students have millions of PDFs — textbooks, notes, research papers — but no 
 - Age: 18–25, studying for UPSC / NEET / JEE
 - Location: Tier 2–3 city (Silchar, Patna, Indore)
 - Pain: Dense PDFs, no one to explain concepts, English barrier
-- Need: Explain this PDF to me in Hindi. Quiz me. Help me revise fast.
+- Need: Explain this PDF to me. Quiz me. Help me revise fast.
 
 ### Secondary Persona — "Priya" (College Student, Urban)
 - Age: 20–26, engineering / MBA / law student
@@ -73,10 +73,8 @@ Students have millions of PDFs — textbooks, notes, research papers — but no 
 ### 5.1 MVP Features (Phase 1)
 
 #### F1 — PDF Upload & Processing
-- Upload PDF (up to 20MB, max 100 pages for free tier)
-- Extract and chunk text via server-side processing
-- Show upload progress and page count confirmation
 - Store processed content for voice session context
+- **Scanned PDF Support**: Auto-detect image-only PDFs and trigger Tesseract.js OCR fallback (max 20 pages for Free tier)
 
 #### F2 — In-Browser Voice Agent (Vapi WebRTC)
 - Single "Talk" button — no app download required
@@ -85,10 +83,9 @@ Students have millions of PDFs — textbooks, notes, research papers — but no 
 - Agent has full PDF content as context
 - Session auto-ends at 5 minutes (free tier)
 
-#### F3 — Language Toggle
-- Hindi and English voice modes
-- User selects language before starting session
-- Agent responds entirely in chosen language
+#### F3 — Language Toggle (Removed)
+- Default to English voice mode
+- Agent responds entirely in English
 
 #### F4 — Study Modes
 
@@ -103,11 +100,11 @@ Students have millions of PDFs — textbooks, notes, research papers — but no 
 - Aggressive, timed pacing — no fluff
 - Shows score at the end
 
-**Debate Mode (Unique USP)**
+**Debate Mode (Unique USP) — PRO ONLY**
 - Agent takes the opposite position of what the PDF argues
 - Student must defend the content
 - Forces deep active recall
-- Most shareable / viral mode
+- Most shareable / viral mode (Locked behind Pro to drive conversion)
 
 #### F5 — Session Summary
 - After each session, auto-generate a text summary
@@ -138,9 +135,9 @@ Students have millions of PDFs — textbooks, notes, research papers — but no 
 - Students join a shared "room" and study the same material
 - Teacher sees analytics (which students studied, for how long)
 
-#### F10 — Vernacular Language Expansion
-- Add Bengali, Assamese, Tamil, Telugu voice modes
-- Huge differentiation in Indian regional markets
+#### F10 — Multi-Device Support
+- Seamless transition between desktop and mobile browser
+- Shared session history across devices
 
 #### F11 — Browser Extension
 - Highlight any text on any webpage → right-click → "Add to integratepdf"
@@ -161,9 +158,7 @@ Sign up (Google or Email)
     ↓
 Upload PDF (drag & drop or click)
     ↓
-Select Language (Hindi / English)
-    ↓
-Select Mode (Tutor / Panic / Debate)
+Select Mode (Tutor / Panic / Debate - Tier Appropriate)
     ↓
 Click "Start Talking" button
     ↓
@@ -197,7 +192,7 @@ Choose mode → Start session
 | Frontend | Next.js 14 (App Router) + Tailwind CSS |
 | Backend | Node.js / Express or Next.js API routes |
 | Database | Supabase (Postgres + Auth + Storage) |
-| PDF Processing | pdf-parse (Node) or PyMuPDF (Python) |
+| PDF Processing | pdf-parse (Text) + Tesseract.js (OCR Fallback) |
 | Voice Agent | Vapi (WebRTC in-browser, no phone number) |
 | AI Model | Claude via Anthropic API (PDF context + conversation) |
 | Hosting | Vercel (frontend) + Railway or Supabase Edge Functions |
@@ -208,7 +203,7 @@ Choose mode → Start session
 - Use **Vapi Web SDK** (browser-based, zero phone costs)
 - PDF content is chunked and passed as system prompt context to Vapi
 - Vapi handles: STT (speech-to-text) → LLM → TTS (text-to-speech)
-- Voice personas configured per language (Hindi / English)
+- Voice personas configured for optimal clarity
 - Session metadata (duration, transcript) saved post-call via Vapi webhook
 
 ### 7.3 PDF Processing Pipeline
@@ -216,7 +211,9 @@ Choose mode → Start session
 ```
 User uploads PDF
     ↓
-Server extracts text (pdf-parse)
+Attempt text extraction (pdfjs-dist)
+    ↓
+If text density low → Trigger Tesseract.js OCR
     ↓
 Text chunked into segments (max 4000 tokens each)
     ↓
@@ -233,8 +230,10 @@ Claude uses context to answer voice questions
 |---------|---------------|----------------|
 | Vapi (5 min/day) | ~$0.03/day | ~$0.15/day (25 min) |
 | Claude API | ~$0.005/session | ~$0.02/session |
-| Supabase Storage | ~$0.001/PDF | ~$0.001/PDF |
+| OCR (Client-side) | $0.00 (CPU) | $0.00 (CPU) |
 | **Total / month** | **~$1.00/user** | **~$4.50/user** |
+
+**Note on OCR:** We use client-side Tesseract.js to eliminate server costs. Processing is compute-intensive on the user's device. Limits: 20 pages (Free), 50 pages (Student), 100 pages (Pro).
 
 ---
 
@@ -244,9 +243,9 @@ Claude uses context to answer voice questions
 
 | Plan | Price | Limits |
 |------|-------|--------|
-| **Free** | ₹0 | 3 PDFs, 5 min/day voice, English only |
-| **Student** | ₹199/month ($2.50) | 20 PDFs, 30 min/day, Hindi + English |
-| **Pro** | ₹499/month ($6) | Unlimited PDFs, 2 hrs/day, all modes, summary export |
+| **Free** | ₹0 | 3 PDFs, 5 min/day (Tutor Mode only) |
+| **Student** | ₹199/month ($2.50) | 20 PDFs, 30 min/day (Tutor & Panic Modes) |
+| **Pro** | ₹499/month ($6) | Unlimited PDFs, 2 hrs/day, All Modes (inc. Debate) |
 | **Institute** | ₹4,999/month | Batch upload, student analytics, 50 seats |
 
 ### Revenue Projections (Month 3)
@@ -284,7 +283,7 @@ Claude uses context to answer voice questions
 | Feature | integratepdf.com | AskYourPDF | Speechify | StudyPDF |
 |---------|-----------------|------------|-----------|----------|
 | Real-time voice conversation | ✅ | ❌ | ❌ | ❌ |
-| Hindi language support | ✅ | ❌ | Partial | ❌ |
+| Voice-based active recall | ✅ | ❌ | ❌ | ❌ |
 | Debate / Argue mode | ✅ | ❌ | ❌ | ❌ |
 | Exam Panic mode | ✅ | ❌ | ❌ | Partial |
 | In-browser (no app) | ✅ | ✅ | ❌ | ✅ |
@@ -301,7 +300,7 @@ Claude uses context to answer voice questions
 |------|-----------|--------|-----------|
 | Vapi costs exceed revenue | Medium | High | Hard cap free tier at 5 min/day, monitor burn daily |
 | PDF parsing fails on complex docs | High | Medium | Show clear error + fallback text extraction |
-| Low Hindi voice quality | Medium | High | Test multiple Vapi voice models before launch |
+| Low voice response quality | Medium | High | Test multiple Vapi voice models before launch |
 | Users don't understand the product | Medium | High | Add 30-second demo video on homepage |
 | Competitor copies idea fast | Low | Medium | Move fast, build community moat |
 
@@ -314,7 +313,6 @@ Claude uses context to answer voice questions
 | Tech stack finalized | Week 1 |
 | PDF upload + text extraction working | Week 2 |
 | Vapi WebRTC integrated in browser | Week 3 |
-| Hindi + English voice tested | Week 3 |
 | All 3 study modes working | Week 4 |
 | Auth + dashboard complete | Week 4 |
 | Beta with 20 test users | Week 5 |
@@ -326,10 +324,8 @@ Claude uses context to answer voice questions
 
 ## 13. Open Questions
 
-1. Should Debate Mode be a free or paid-only feature? (Recommend: paid — it's the most valuable USP)
-2. Which Hindi TTS voice on Vapi sounds most natural for students?
-3. Should we support image-based PDFs (scanned notes) via OCR in MVP or Phase 2?
-4. Do we build our own PDF viewer UI or keep it minimal?
+1. Which Vapi voice sounds most natural for students?
+2. Do we build our own PDF viewer UI or keep it minimal?
 
 ---
 

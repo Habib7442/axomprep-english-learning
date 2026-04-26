@@ -11,7 +11,8 @@ import { parsePDFFile } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createBook, deleteBookAction, fetchBooksAction } from '@/lib/actions/book.actions'
-import { MAX_FILE_SIZE } from '@/lib/constants'
+import { MAX_FILE_SIZE, TIER_LIMITS } from '@/lib/constants'
+import { FileUploadZone } from '@/components/FileUploadZone'
 
 interface PDFBook {
   id: string;
@@ -24,10 +25,11 @@ interface PDFBook {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { user, isLoading: authLoading } = useAuthStore()
+  const { user, profile, isLoading: authLoading } = useAuthStore()
   const [books, setBooks] = useState<PDFBook[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [loadingMessage, setLoadingMessage] = useState("")
   const [isLoadingBooks, setIsLoadingBooks] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -74,12 +76,25 @@ export default function DashboardPage() {
       return
     }
 
+    const tier = (profile?.subscription_tier as keyof typeof TIER_LIMITS) || 'free'
+    const limits = TIER_LIMITS[tier]
+
+    if (books.length >= limits.maxPDFs) {
+      alert(`You've reached the limit of ${limits.maxPDFs} PDFs for the ${tier} plan. Please upgrade to upload more.`)
+      return
+    }
+
     try {
       setIsUploading(true)
       setUploadProgress(10)
 
       // 1. Parse PDF for text and cover
-      const { content, cover } = await parsePDFFile(file)
+      setLoadingMessage("Analyzing PDF structure...")
+      const { content, cover } = await parsePDFFile(
+        file, 
+        (msg) => setLoadingMessage(msg),
+        limits.maxOCR
+      )
       setUploadProgress(30)
 
       // 2. Upload PDF to Storage
@@ -90,6 +105,7 @@ export default function DashboardPage() {
         .upload(fileName, file)
 
       if (uploadError) throw uploadError
+      setLoadingMessage("Finalizing upload...")
       setUploadProgress(50)
 
       // 3. Upload Cover to Storage (if exists)
@@ -120,25 +136,22 @@ export default function DashboardPage() {
         segments: content
       })
 
-      console.log('Book created with segment count:', content.length);
-
-      if (content.length === 0) {
-        alert('Warning: No text could be extracted from this PDF. Chat might not work correctly.');
-      }
-
       if (!result.success) throw new Error(result.error)
       
       setUploadProgress(100)
       setTimeout(() => {
         setIsUploading(false)
         setUploadProgress(0)
+        setLoadingMessage("")
         fetchBooks()
       }, 500)
 
     } catch (error) {
       console.error('Error uploading PDF:', error)
-      alert('Failed to upload PDF. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to upload PDF. Please try again.')
       setIsUploading(false)
+      setUploadProgress(0)
+      setLoadingMessage("")
     }
   }
 
@@ -181,34 +194,40 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="max-w-3xl"
+            className="max-w-3xl flex flex-col items-center"
           >
             <h1 className="text-4xl md:text-5xl font-black mb-4 text-white tracking-tight leading-none">
               My <span className="text-primary">Library</span>
             </h1>
-            <p className="text-muted-foreground text-lg md:text-xl mb-6 leading-relaxed">
+            <p className="text-muted-foreground text-lg md:text-xl mb-10 leading-relaxed max-w-2xl mx-auto">
               Upload your PDFs and start talking to them. Your study material is now your conversation partner.
             </p>
             
-            {books.length > 0 && (
+            {books.length > 0 && !isUploading && (
               <Button 
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
                 className="bg-primary text-black hover:bg-accent font-black h-14 px-8 rounded-2xl shadow-[0_0_20px_rgba(0,181,181,0.2)] transition-all duration-300 active:scale-95 text-base"
               >
-                {isUploading ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Processing... {uploadProgress}%</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <FileUp className="h-5 w-5" />
-                    <span>Upload New PDF</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-3">
+                  <FileUp className="h-5 w-5" />
+                  <span>Upload New PDF</span>
+                </div>
               </Button>
             )}
+
+            {isUploading && books.length > 0 && (
+              <div className="flex flex-col items-center gap-2" role="status" aria-live="polite" aria-busy="true">
+                <div className="flex items-center gap-3 text-primary">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span className="font-black text-lg">{uploadProgress}%</span>
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
+                  {loadingMessage || 'Processing...'}
+                </span>
+                <span className="sr-only">Upload in progress: {uploadProgress}% - {loadingMessage || 'Processing...'}</span>
+              </div>
+            )}
+            
             <input 
               type="file" 
               ref={fileInputRef} 
@@ -227,22 +246,13 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : books.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-6 rounded-3xl border-2 border-dashed border-white/5 bg-card/20">
-              <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-8">
-                <Book className="h-10 w-10 text-primary/50" />
-              </div>
-              <h2 className="text-3xl font-bold mb-4 text-white text-center">Your library is empty</h2>
-              <p className="text-muted-foreground text-center max-w-md mb-10 leading-relaxed">
-                Start by uploading a PDF textbook, research paper, or your class notes.
-              </p>
-              <Button 
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-                className="h-14 px-10 rounded-2xl border-primary/30 text-primary hover:bg-primary hover:text-black transition-all font-bold"
-              >
-                Upload Your First PDF
-              </Button>
-            </div>
+            <FileUploadZone 
+              onFileSelect={(file) => handleFileUpload({ target: { files: [file] } } as any)}
+              isUploading={isUploading}
+              uploadProgress={uploadProgress}
+              loadingMessage={loadingMessage}
+              maxSize={MAX_FILE_SIZE}
+            />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               <AnimatePresence>
@@ -255,7 +265,6 @@ export default function DashboardPage() {
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="group relative bg-card/50 border border-white/5 rounded-3xl overflow-hidden hover:border-primary/50 transition-all duration-500 shadow-xl"
                   >
-                    {/* Cover Image Placeholder or Actual */}
                     <div className="aspect-[3/4] bg-muted relative overflow-hidden">
                       {book.cover_url ? (
                         <img 
@@ -269,7 +278,6 @@ export default function DashboardPage() {
                         </div>
                       )}
                       
-                      {/* Hover Overlay */}
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">
                         <Button 
                           onClick={() => router.push(`/chat/${book.id}`)}
