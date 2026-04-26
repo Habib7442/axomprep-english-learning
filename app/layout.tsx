@@ -16,8 +16,41 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "integratepdf.com - Talk to your PDFs with AI",
-  description: "The only platform where you don't read your PDF — you talk to it. Voice-first AI study platform for students.",
+  metadataBase: new URL('https://www.integratepdf.com'),
+  title: {
+    default: "IntegratePDF | Talk to your PDFs with Voice AI",
+    template: "%s | IntegratePDF"
+  },
+  description: "The world's first voice-first AI study platform. Don't just read your PDFs—talk to them. Master complex topics with Tutor, Panic, and Debate modes.",
+  keywords: ["AI Study Tool", "Talk to PDF", "Voice AI", "Interactive Learning", "PDF Tutor", "Student Productivity", "Exam Preparation"],
+  authors: [{ name: "IntegratePDF Team" }],
+  creator: "IntegratePDF",
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://www.integratepdf.com',
+    title: 'IntegratePDF - The Voice-First AI Study Platform',
+    description: "Experience the future of studying. Upload any PDF and start a voice conversation with your documents.",
+    siteName: 'IntegratePDF',
+    images: [
+      {
+        url: '/og.png',
+        width: 1200,
+        height: 630,
+        alt: 'IntegratePDF - Talk to your PDFs',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'IntegratePDF - Talk to your PDFs',
+    description: "Don't just read your PDFs—talk to them. Voice-first AI study platform for the modern student.",
+    images: ['/og.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
