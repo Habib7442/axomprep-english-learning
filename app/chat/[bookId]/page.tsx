@@ -31,14 +31,15 @@ export default function ChatPage() {
   const [book, setBook] = useState<any>(null)
   const [segments, setSegments] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isCalling, setIsCalling] = useState(false)
+  const hasFetchedRef = useRef(false)
+  const [isMuted, setIsMuted] = useState(false)
   const [callStatus, setCallStatus] = useState<'idle' | 'loading' | 'active' | 'error'>('idle')
   const [selectedMode, setSelectedMode] = useState<Mode>('tutor')
   const [transcript, setTranscript] = useState<{ role: string, text: string }[]>([])
   const [vapi, setVapi] = useState<Vapi | null>(null)
   const [callDuration, setCallDuration] = useState(0)
+  const [isCalling, setIsCalling] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
-  const [isMuted, setIsMuted] = useState(false)
 
   // Use refs to avoid stale closures in Vapi event handlers
   const transcriptRef = useRef(transcript)
@@ -72,13 +73,7 @@ export default function ChatPage() {
     }
   }, [user, authLoading, router])
 
-  useEffect(() => {
-    if (bookId && user) {
-      fetchBookData(book !== null)
-    }
-  }, [bookId, user])
-
-  const fetchBookData = async (silent = false) => {
+  const fetchBookData = useCallback(async (silent = false) => {
     try {
       if (!silent) setIsLoading(true)
       const { data: bookData, error: bookError } = await supabase
@@ -106,7 +101,14 @@ export default function ChatPage() {
     } finally {
       if (!silent) setIsLoading(false)
     }
-  }
+  }, [bookId, router, supabase])
+
+  useEffect(() => {
+    if (bookId && user) {
+      fetchBookData(hasFetchedRef.current);
+      hasFetchedRef.current = true;
+    }
+  }, [bookId, user, fetchBookData]);
 
   const toggleMute = () => {
     if (vapi) {

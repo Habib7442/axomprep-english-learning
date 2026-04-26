@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { createClient } from '@/lib/supabase/client'
 import { 
@@ -24,15 +24,10 @@ export default function ProfilePage() {
   const [newName, setNewName] = useState(profile?.name || '')
   const [stats, setStats] = useState({ totalSessions: 0, totalTime: 0, dailyUsage: 0 })
   const [isLoading, setIsLoading] = useState(true)
+  const hasFetchedRef = useRef(false)
   const supabase = createClient()
 
-  useEffect(() => {
-    if (user) {
-      fetchStats(stats.totalSessions > 0)
-    }
-  }, [user])
-
-  const fetchStats = async (silent = false) => {
+  const fetchStats = useCallback(async (silent = false) => {
     try {
       if (!silent) setIsLoading(true)
       const { data, error } = await supabase
@@ -46,10 +41,14 @@ export default function ProfilePage() {
         const totalSessions = data.length
         const totalTime = data.reduce((acc, s) => acc + (s.duration || 0), 0)
         
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const now = new Date()
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        
         const dailyUsage = data
-          .filter(s => new Date(s.created_at) >= today)
+          .filter(s => {
+            const sessionDate = new Date(s.created_at)
+            return sessionDate >= todayStart
+          })
           .reduce((acc, s) => acc + (s.duration || 0), 0)
 
         setStats({ totalSessions, totalTime, dailyUsage })
@@ -59,7 +58,14 @@ export default function ProfilePage() {
     } finally {
       if (!silent) setIsLoading(false)
     }
-  }
+  }, [user?.id, supabase])
+
+  useEffect(() => {
+    if (user) {
+      fetchStats(hasFetchedRef.current);
+      hasFetchedRef.current = true;
+    }
+  }, [user, fetchStats]);
 
   const handleUpdateName = async () => {
     if (!user) return
@@ -72,7 +78,9 @@ export default function ProfilePage() {
 
       if (error) throw error
 
-      setProfile({ ...profile, name: newName })
+      if (profile) {
+        setProfile({ ...profile, name: newName })
+      }
       setIsEditing(false)
       toast.success('Profile updated successfully!')
     } catch (error: any) {

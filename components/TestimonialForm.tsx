@@ -19,7 +19,10 @@ export function TestimonialForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name || !content) {
+    const trimmedName = name.trim()
+    const trimmedContent = content.trim()
+
+    if (!trimmedName || !trimmedContent) {
       toast.error('Please fill in all fields')
       return
     }
@@ -29,7 +32,7 @@ export function TestimonialForm() {
       const { error } = await supabase
         .from('testimonials')
         .insert([
-          { name, rating, content, is_published: false }
+          { name: trimmedName, rating, content: trimmedContent, is_published: false }
         ])
 
       if (error) throw error
@@ -54,7 +57,7 @@ export function TestimonialForm() {
         <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 text-primary">
           <Star className="h-10 w-10 fill-current" />
         </div>
-        <h3 className="text-3xl font-black text-white mb-4 tracking-tight">Review Received!</h3>
+        <h3 className="text-3xl font-black text-foreground mb-4 tracking-tight">Review Received!</h3>
         <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
           Thank you for sharing your experience. Your review will be published shortly after a quick check.
         </p>
@@ -66,7 +69,7 @@ export function TestimonialForm() {
             setContent('')
             setRating(5)
           }}
-          className="border-white/10 text-white hover:bg-white/5 rounded-xl px-8 h-12"
+          className="border-white/10 text-foreground hover:bg-white/5 rounded-xl px-8 h-12"
         >
           Submit Another
         </Button>
@@ -79,7 +82,7 @@ export function TestimonialForm() {
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] -mr-32 -mt-32" />
       
       <div className="relative">
-        <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Share Your Experience</h3>
+        <h3 className="text-2xl font-black text-foreground mb-2 tracking-tight">Share Your Experience</h3>
         <p className="text-sm text-muted-foreground mb-8 font-medium">Your feedback helps us make IntegratePDF better for everyone.</p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -90,6 +93,8 @@ export function TestimonialForm() {
                 <button
                   key={star}
                   type="button"
+                  aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                  aria-pressed={rating === star}
                   onMouseEnter={() => setHoveredStar(star)}
                   onMouseLeave={() => setHoveredStar(0)}
                   onClick={() => setRating(star)}
@@ -99,7 +104,7 @@ export function TestimonialForm() {
                     className={`h-8 w-8 ${
                       star <= (hoveredStar || rating) 
                         ? 'text-primary fill-current' 
-                        : 'text-white/10 fill-none'
+                        : 'text-foreground/10 fill-none'
                     }`} 
                   />
                 </button>
@@ -108,25 +113,27 @@ export function TestimonialForm() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">Your Name</label>
+            <label htmlFor="testimonial-name" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">Your Name</label>
             <input 
+              id="testimonial-name"
               type="text" 
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="How should we call you?"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary/50 transition-all placeholder:text-white/20 font-medium"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-foreground focus:outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 font-medium"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">Your Review</label>
+            <label htmlFor="testimonial-content" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">Your Review</label>
             <textarea 
+              id="testimonial-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="What do you love most about talking to your PDFs?"
               rows={4}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary/50 transition-all placeholder:text-white/20 font-medium resize-none"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-foreground focus:outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 font-medium resize-none"
               required
             />
           </div>

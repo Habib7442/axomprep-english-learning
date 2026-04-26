@@ -31,15 +31,20 @@ const staticTestimonials = [
 
 export function TestimonialsSection() {
   const [displayTestimonials, setDisplayTestimonials] = useState(staticTestimonials)
-  const supabase = createClient()
 
   useEffect(() => {
     async function fetchTestimonials() {
+      const supabase = createClient()
       const { data, error } = await supabase
         .from('testimonials')
         .select('*')
         .eq('is_published', true)
         .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Failed to fetch testimonials:', error)
+        return
+      }
 
       if (data && data.length > 0) {
         // Merge static with dynamic ones

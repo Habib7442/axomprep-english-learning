@@ -30,6 +30,12 @@ CREATE POLICY "Users can insert their own session history"
 CREATE POLICY "Users can update their own session history" 
   ON session_history 
   FOR UPDATE 
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own session history" 
+  ON session_history 
+  FOR DELETE 
   USING (auth.uid() = user_id);
 
 -- Grant permissions

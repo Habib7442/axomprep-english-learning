@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { Icons } from '@/components/icons'
@@ -31,6 +31,7 @@ export default function DashboardPage() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [loadingMessage, setLoadingMessage] = useState("")
   const [isLoadingBooks, setIsLoadingBooks] = useState(true)
+  const hasFetchedRef = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const supabase = createClient()
@@ -41,13 +42,7 @@ export default function DashboardPage() {
     }
   }, [user, authLoading, router])
 
-  useEffect(() => {
-    if (user) {
-      fetchBooks(books.length > 0)
-    }
-  }, [user])
-
-  const fetchBooks = async (silent = false) => {
+  const fetchBooks = useCallback(async (silent = false) => {
     try {
       if (!silent) setIsLoadingBooks(true)
       const result = await fetchBooksAction()
@@ -61,7 +56,14 @@ export default function DashboardPage() {
     } finally {
       if (!silent) setIsLoadingBooks(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (user) {
+      fetchBooks(hasFetchedRef.current);
+      hasFetchedRef.current = true;
+    }
+  }, [user, fetchBooks]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

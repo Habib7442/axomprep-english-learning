@@ -29,7 +29,7 @@ export default function ReviewsPage() {
               <Star className="h-3 w-3 fill-current" />
               Your voice matters
             </div>
-            <h1 className="text-5xl font-black text-white mb-6 tracking-tight">
+            <h1 className="text-5xl font-black text-foreground mb-6 tracking-tight">
               Tell us what <span className="text-primary italic">you think</span>
             </h1>
             <p className="text-xl text-muted-foreground font-medium leading-relaxed">

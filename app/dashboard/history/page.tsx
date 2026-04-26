@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { createClient } from '@/lib/supabase/client'
 import { 
@@ -22,15 +22,10 @@ export default function HistoryPage() {
   const [sessions, setSessions] = useState<any[]>([])
   const [dailyUsage, setDailyUsage] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const hasFetchedRef = useRef(false)
   const supabase = createClient()
 
-  useEffect(() => {
-    if (user) {
-      fetchHistory(sessions.length > 0)
-    }
-  }, [user])
-
-  const fetchHistory = async (silent = false) => {
+  const fetchHistory = useCallback(async (silent = false) => {
     try {
       if (!silent) setIsLoading(true)
       const { data, error } = await supabase
@@ -47,10 +42,14 @@ export default function HistoryPage() {
       if (error) throw error
       setSessions(data || [])
 
-      // Calculate today's usage
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const todaySessions = (data || []).filter(s => new Date(s.created_at) >= today)
+      // Calculate today's usage in local timezone
+      const now = new Date()
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      
+      const todaySessions = (data || []).filter(s => {
+        const sessionDate = new Date(s.created_at)
+        return sessionDate >= todayStart
+      })
       const totalToday = todaySessions.reduce((acc, s) => acc + (s.duration || 0), 0)
       setDailyUsage(totalToday)
     } catch (error: any) {
@@ -58,7 +57,14 @@ export default function HistoryPage() {
     } finally {
       if (!silent) setIsLoading(false)
     }
-  }
+  }, [user?.id, supabase])
+
+  useEffect(() => {
+    if (user) {
+      fetchHistory(hasFetchedRef.current);
+      hasFetchedRef.current = true;
+    }
+  }, [user, fetchHistory]);
 
   const deleteSession = async (id: string) => {
     if (!confirm('Are you sure you want to delete this session?')) return
@@ -169,7 +175,7 @@ export default function HistoryPage() {
                       </div>
                       <div className="flex items-center gap-1.5 whitespace-nowrap">
                         <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                        {Math.floor(session.duration / 60)}m {session.duration % 60}s
+                        {Math.floor((session.duration || 0) / 60)}m {(session.duration || 0) % 60}s
                       </div>
                       <div className="flex items-center gap-1.5 whitespace-nowrap">
                         <MessageSquare className="h-3.5 w-3.5 md:h-4 md:w-4" />
