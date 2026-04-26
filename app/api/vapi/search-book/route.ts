@@ -52,7 +52,6 @@ async function processBookSearch(bookId: string, query: string) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    console.log('Vapi search-book request:', JSON.stringify(body, null, 2));
 
     // Vapi sends tool calls in body.message.toolCalls or toolCallList
     const toolCalls = body?.message?.toolCalls || body?.message?.toolCallList;

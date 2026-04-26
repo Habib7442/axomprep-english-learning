@@ -34,12 +34,10 @@ function AuthCallback() {
         return
       }
       
-      console.log('Auth callback: session', session);
       
       if (session?.user) {
         // Update our auth store with the user
         setUser(session.user)
-        console.log('Auth callback: user set in store', session.user.id);
         
         // Check if user has completed onboarding
         const { data: userData, error: userError } = await supabase
@@ -48,23 +46,18 @@ function AuthCallback() {
           .eq('id', session.user.id)
           .single()
         
-        console.log('Auth callback: user data from Supabase', userData);
-        console.log('Auth callback: user error from Supabase', userError);
         
         // Check if we have a next parameter to redirect to a specific page
         const next = searchParams.get('next')
         // Only allow relative URLs to prevent open redirect attacks
         if (next && next.startsWith('/') && !next.startsWith('//')) {
-          console.log('Auth callback: redirecting to next parameter', next);
           router.push(next)
         } else {
           // Redirect to dashboard
-          console.log('Auth callback: redirecting to dashboard');
           router.push('/dashboard')
         }
       } else {
         // No session, redirect to home
-        console.log('Auth callback: no session, redirecting to home');
         router.push('/')
       }
     }

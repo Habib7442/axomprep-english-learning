@@ -101,7 +101,6 @@ export async function parsePDFFile(
     // Fallback to OCR if text is suspicious (less than 50 chars per page on average)
     const textDensity = fullText.trim().length / pdfDocument.numPages;
     if (textDensity < 50) {
-      console.log("Low text density detected, switching to OCR mode...");
       onProgress?.("Scanned PDF detected. Initializing OCR...");
       
       fullText = ""; // Clear the empty text layers

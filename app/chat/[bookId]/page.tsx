@@ -61,7 +61,6 @@ export default function ChatPage() {
     if (vapiToken) {
       const vapiInstance = new Vapi(vapiToken)
       setVapi(vapiInstance)
-      console.log('Vapi initialized with token')
     } else {
       console.error('Vapi token missing')
     }
@@ -93,7 +92,6 @@ export default function ChatPage() {
         .limit(10) // Initial context limit
 
       if (segmentsError) throw segmentsError
-      console.log('Fetched segments for book:', bookId, segmentsData?.length);
       setSegments(segmentsData || [])
     } catch (error) {
       console.error('Error fetching book data:', error)
@@ -124,10 +122,6 @@ export default function ChatPage() {
   const saveSession = async () => {
     if (!user || transcriptRef.current.length === 0) return
 
-    console.log('Saving session to Supabase...', {
-      duration: callDurationRef.current,
-      messages: transcriptRef.current.length
-    });
 
     try {
       const { error } = await supabase
@@ -141,7 +135,6 @@ export default function ChatPage() {
         });
 
       if (error) throw error
-      console.log('Session history saved')
     } catch (error) {
       console.error('Error saving session history:', error)
     }
@@ -152,20 +145,17 @@ export default function ChatPage() {
     if (!vapi) return
 
     const handleCallStart = () => {
-      console.log('Call started successfully')
       setCallStatus('active')
       setIsCalling(true)
     }
 
     const handleCallEnd = () => {
-      console.log('Call ended')
       setCallStatus('idle')
       setIsCalling(false)
       saveSession()
     }
 
     const handleMessage = async (message: any) => {
-      console.log('Vapi message:', message.type, message);
       
       if (message.type === 'transcript') {
         if (message.transcriptType === 'final') {
@@ -174,7 +164,6 @@ export default function ChatPage() {
       }
 
       if (message.type === 'tool-calls') {
-        console.log('Handling client-side tool call:', message.toolCallList);
         for (const toolCall of message.toolCallList) {
           if (toolCall.function.name === 'searchBook') {
             try {
@@ -204,7 +193,6 @@ export default function ChatPage() {
                 })
               });
               const data = await response.json();
-              console.log('Tool response:', data);
               // Send the result back to Vapi
               (vapi as any)?.send({
                 type: 'tool-call-result',
@@ -366,7 +354,6 @@ export default function ChatPage() {
       }
     }
 
-    console.log('Starting Vapi session with assistant:', assistant);
 
     try {
       await vapi.start(assistant, overrides)

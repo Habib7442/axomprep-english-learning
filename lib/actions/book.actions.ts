@@ -57,7 +57,6 @@ export async function createBook(data: {
     
     // Cleanup: Delete the book record if segments failed to insert
     if (createdBookId) {
-      console.log('Cleaning up orphaned book record:', createdBookId);
       await supabase.from('books').delete().eq('id', createdBookId);
     }
 
