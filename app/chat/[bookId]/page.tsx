@@ -15,7 +15,6 @@ import {
   GraduationCap, 
   Zap, 
   Sword,
-  Lock,
   MessageSquare,
   Sparkles
 } from 'lucide-react'
@@ -75,13 +74,13 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (bookId && user) {
-      fetchBookData()
+      fetchBookData(book !== null)
     }
   }, [bookId, user])
 
-  const fetchBookData = async () => {
+  const fetchBookData = async (silent = false) => {
     try {
-      setIsLoading(true)
+      if (!silent) setIsLoading(true)
       const { data: bookData, error: bookError } = await supabase
         .from('books')
         .select('*')
@@ -105,7 +104,7 @@ export default function ChatPage() {
       console.error('Error fetching book data:', error)
       router.push('/dashboard')
     } finally {
-      setIsLoading(false)
+      if (!silent) setIsLoading(false)
     }
   }
 
@@ -307,20 +306,6 @@ export default function ChatPage() {
         setShowUpgradeModal(true)
         return
       }
-
-      // Block restricted modes for Free tier
-      if (selectedMode !== 'tutor') {
-        alert('Panic and Debate modes are only available on Student and Pro plans.')
-        router.push('/pricing')
-        return
-      }
-    }
-
-    // Check restricted modes for Student tier
-    if (profile?.subscription_tier === 'student' && selectedMode === 'debate') {
-      alert('Debate mode is only available on the Pro plan.')
-      router.push('/pricing')
-      return
     }
 
     if (segments.length === 0) {
@@ -449,7 +434,7 @@ export default function ChatPage() {
                   icon: Zap, 
                   color: 'accent', 
                   desc: 'Rapid-fire drills & high-pressure recall',
-                  minTier: 'student'
+                  minTier: 'free'
                 },
                 { 
                   id: 'debate', 
@@ -457,39 +442,23 @@ export default function ChatPage() {
                   icon: Sword, 
                   color: 'primary', 
                   desc: 'Defend your notes against an AI adversary',
-                  minTier: 'pro'
+                  minTier: 'free'
                 }
               ].map((mode) => {
-                const tierRank: Record<string, number> = { 'free': 0, 'student': 1, 'pro': 2 };
-                const userTierRank = tierRank[profile?.subscription_tier || 'free'];
-                const modeTierRank = tierRank[mode.minTier];
-                const isLocked = userTierRank < modeTierRank;
-
                 return (
                   <button
                     key={mode.id}
                     onClick={() => {
-                      if (isLocked) {
-                        router.push('/pricing');
-                      } else {
-                        setSelectedMode(mode.id as Mode);
-                      }
+                      setSelectedMode(mode.id as Mode);
                     }}
                     className={`group relative flex flex-col p-8 rounded-[2rem] border-2 transition-all duration-500 text-left backdrop-blur-md ${
-                      isLocked ? 'opacity-70 grayscale-[0.5] cursor-pointer hover:bg-white/5' : ''
-                    } ${
-                      selectedMode === mode.id && !isLocked
+                      selectedMode === mode.id
                         ? 'bg-primary/20 border-primary shadow-[0_0_50px_rgba(0,181,181,0.25)]' 
                         : 'bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10'
                     }`}
                   >
-                    {isLocked && (
-                      <div className="absolute top-6 right-6 text-muted-foreground/40">
-                        <Lock className="h-5 w-5" />
-                      </div>
-                    )}
                     <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${
-                      selectedMode === mode.id && !isLocked ? 'bg-primary text-black shadow-[0_0_20px_rgba(0,181,181,0.5)]' : 'bg-white/5 text-muted-foreground'
+                      selectedMode === mode.id ? 'bg-primary text-black shadow-[0_0_20px_rgba(0,181,181,0.5)]' : 'bg-white/5 text-muted-foreground'
                     }`}>
                       <mode.icon className="h-8 w-8" />
                     </div>
@@ -497,11 +466,6 @@ export default function ChatPage() {
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {mode.desc}
                     </p>
-                    {isLocked && (
-                      <div className="mt-4 text-[10px] font-black uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                        Upgrade to Unlock
-                      </div>
-                    )}
                   </button>
                 );
               })}
@@ -536,8 +500,8 @@ export default function ChatPage() {
             >
               {/* Voice Visualizer */}
               <div className="w-64 h-64 rounded-full bg-primary/5 flex items-center justify-center relative">
-                <div className="absolute inset-0 border-2 border-primary/20 rounded-full animate-ping" />
-                <div className="absolute inset-4 border-2 border-primary/10 rounded-full animate-ping [animation-delay:0.5s]" />
+                <div className="absolute inset-0 border-2 border-primary/20 rounded-full" />
+                <div className="absolute inset-4 border-2 border-primary/10 rounded-full" />
                 
                 <div className="flex gap-2 items-end h-24 z-10">
                   {[...Array(12)].map((_, i) => (
@@ -557,7 +521,7 @@ export default function ChatPage() {
 
               <div className="text-center">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full border border-primary/20 text-xs font-black uppercase tracking-widest mb-6">
-                  <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                  <span className="h-2 w-2 rounded-full bg-primary" />
                   {selectedMode} mode active
                 </div>
                 <h2 className="text-4xl font-black text-white mb-2 italic">Listening to you...</h2>
@@ -565,8 +529,7 @@ export default function ChatPage() {
               </div>
 
               {/* Chat Transcript Area */}
-              <div className="w-full bg-card/40 backdrop-blur-xl rounded-[2rem] p-8 border border-white/10 h-[400px] flex flex-col relative overflow-hidden shadow-2xl">
-                <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-card/90 to-transparent z-10 pointer-events-none" />
+              <div className="w-full bg-card rounded-[2rem] p-8 border border-white/10 h-[400px] flex flex-col relative overflow-hidden shadow-2xl">
                 
                 <div className="flex-1 overflow-y-auto space-y-6 pt-10 pb-16 scrollbar-hide flex flex-col-reverse">
                   <div className="flex flex-col space-y-6">
@@ -580,7 +543,7 @@ export default function ChatPage() {
                         >
                           <div className={`max-w-[85%] px-6 py-4 rounded-[1.5rem] text-base leading-relaxed shadow-lg ${
                             msg.role === 'user' 
-                              ? 'bg-gradient-to-br from-primary to-accent text-black font-bold rounded-tr-none' 
+                              ? 'bg-primary text-black font-bold rounded-tr-none' 
                               : 'bg-white/10 text-white rounded-tl-none border border-white/10 backdrop-blur-md'
                           }`}>
                             {msg.text}
@@ -598,8 +561,7 @@ export default function ChatPage() {
                   </div>
                 </div>
                 
-                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card/90 to-transparent z-10 pointer-events-none" />
-              </div>
+                </div>
 
               <div className="flex gap-6">
                 <Button 
@@ -644,7 +606,7 @@ export default function ChatPage() {
               className="relative bg-card border border-white/10 rounded-[2.5rem] p-10 max-w-lg w-full text-center shadow-2xl"
             >
               <div className="w-20 h-20 rounded-3xl bg-primary/20 flex items-center justify-center mx-auto mb-8">
-                <Zap className="h-10 w-10 text-primary animate-pulse" />
+                <Zap className="h-10 w-10 text-primary" />
               </div>
               <h2 className="text-4xl font-black text-white mb-4">Trial Ended!</h2>
               <p className="text-muted-foreground text-lg mb-10 leading-relaxed">

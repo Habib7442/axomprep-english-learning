@@ -4,9 +4,10 @@ import { User } from '@supabase/supabase-js'
 
 interface AuthState {
   user: User | null
-  profile: { subscription_tier: string } | null
+  profile: any | null
   isLoading: boolean
   setUser: (user: User | null) => void
+  setProfile: (profile: any | null) => void
   setLoading: (isLoading: boolean) => void
   signInWithGoogle: () => Promise<{ success: boolean; error?: string }>
   signOut: () => Promise<{ success: boolean; error?: string }>
@@ -18,6 +19,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   profile: null,
   isLoading: true,
   setUser: (user) => set({ user }),
+  setProfile: (profile) => set({ profile }),
   setLoading: (isLoading) => set({ isLoading }),
   signInWithGoogle: async () => {
     try {
@@ -68,7 +70,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // Fetch profile
         const { data: profile } = await supabase
           .from('profiles')
-          .select('subscription_tier')
+          .select('*')
           .eq('id', session.user.id)
           .single()
 

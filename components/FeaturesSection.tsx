@@ -38,7 +38,8 @@ const features = [
     icon: <BarChart3 className="h-8 w-8" />,
     title: "Mastery Analytics",
     description: "Track exactly which parts of your PDF you've mastered and where you need more practice. Study with surgical precision.",
-    highlight: false
+    highlight: false,
+    isComingSoon: true
   }
 ];
 
@@ -57,7 +58,7 @@ export function FeaturesSection() {
         >
           <h2 className="text-3xl md:text-4xl font-black mb-6">
             <span className="text-white">Designed for</span>{" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <span className="text-primary">
               High-Performance Students
             </span>
           </h2>
@@ -84,6 +85,11 @@ export function FeaturesSection() {
               {feature.highlight && (
                 <div className="absolute -top-3 left-8 bg-primary text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
                   Most Popular
+                </div>
+              )}
+              {feature.isComingSoon && (
+                <div className="absolute -top-3 left-8 bg-white/10 text-white border border-white/20 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                  Coming Soon
                 </div>
               )}
               

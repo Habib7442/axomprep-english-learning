@@ -34,7 +34,7 @@ export function HeroSection() {
             transition={{ duration: 0.5 }}
             className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-8"
           >
-            <span className="mr-2 h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+            <span className="mr-2 h-2 w-2 rounded-full bg-primary"></span>
             Voice-First AI Study Platform
           </motion.div>
  
@@ -47,7 +47,7 @@ export function HeroSection() {
           >
             <span className="text-white">Stop Reading Your PDFs.</span>
             <br />
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <span className="text-primary">
               Start Talking to Them.
             </span>
           </motion.h1>

@@ -12,7 +12,7 @@ export function NavItems({ mobile = false }: NavItemsProps) {
     { name: "Features", href: "#features" },
     { name: "How It Works", href: "#how-it-works" },
     { name: "Pricing", href: "#pricing" },
-    { name: "Testimonials", href: "#testimonials" },
+    { name: "Testimonials", href: "/reviews" },
   ];
 
   if (mobile) {

@@ -13,7 +13,7 @@ export function CallToActionSection() {
   return (
     <section className="py-12 relative overflow-hidden">
       <div className="absolute inset-0 bg-primary/5 -z-10" />
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-primary/20" />
       
       <div className="container mx-auto px-4">
         <motion.div

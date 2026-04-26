@@ -2,8 +2,10 @@
 
 import { motion } from "framer-motion";
 import { Star, Quote } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
 
-const testimonials = [
+const staticTestimonials = [
   {
     name: "Rahul Kumar",
     role: "UPSC Aspirant",
@@ -28,6 +30,31 @@ const testimonials = [
 ];
 
 export function TestimonialsSection() {
+  const [displayTestimonials, setDisplayTestimonials] = useState(staticTestimonials)
+  const supabase = createClient()
+
+  useEffect(() => {
+    async function fetchTestimonials() {
+      const { data, error } = await supabase
+        .from('testimonials')
+        .select('*')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false })
+
+      if (data && data.length > 0) {
+        // Merge static with dynamic ones
+        const dynamicTestimonials = data.map(t => ({
+          name: t.name,
+          role: "Verified User",
+          company: "IntegratePDF",
+          content: t.content,
+          rating: t.rating
+        }))
+        setDisplayTestimonials([...staticTestimonials, ...dynamicTestimonials])
+      }
+    }
+    fetchTestimonials()
+  }, [])
   return (
     <section id="testimonials" className="py-12 bg-muted/5 relative">
       <div className="container mx-auto px-4">
@@ -46,8 +73,8 @@ export function TestimonialsSection() {
           </p>
         </motion.div>
  
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+          {displayTestimonials.map((testimonial, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
@@ -85,6 +112,22 @@ export function TestimonialsSection() {
             </motion.div>
           ))}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center"
+        >
+          <a 
+            href="/reviews"
+            className="inline-flex items-center gap-3 bg-white/5 border border-white/10 text-white hover:bg-white/10 px-8 py-4 rounded-2xl font-bold transition-all group"
+          >
+            <Star className="h-5 w-5 text-primary group-hover:rotate-12 transition-transform" />
+            <span>Write your own review</span>
+          </a>
+        </motion.div>
       </div>
     </section>
   );

@@ -43,12 +43,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (user) {
-      fetchBooks()
+      fetchBooks(books.length > 0)
     }
   }, [user])
 
-  const fetchBooks = async () => {
+  const fetchBooks = async (silent = false) => {
     try {
+      if (!silent) setIsLoadingBooks(true)
       const result = await fetchBooksAction()
       if (result.success) {
         setBooks(result.data || [])
@@ -58,7 +59,7 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Error fetching books:', error)
     } finally {
-      setIsLoadingBooks(false)
+      if (!silent) setIsLoadingBooks(false)
     }
   }
 
@@ -273,7 +274,7 @@ export default function DashboardPage() {
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/20">
+                        <div className="w-full h-full flex items-center justify-center bg-primary/10">
                           <FileText className="h-20 w-20 text-primary/20" />
                         </div>
                       )}
@@ -288,7 +289,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    <div className="p-6 bg-gradient-to-b from-card to-background/80">
+                    <div className="p-6 bg-card">
                       <div className="flex items-start justify-between gap-4 mb-4">
                         <h3 className="font-bold text-lg text-white line-clamp-1 group-hover:text-primary transition-colors leading-tight">
                           {book.title}

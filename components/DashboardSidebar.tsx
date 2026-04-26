@@ -13,6 +13,7 @@ import {
 import { useAuthStore } from '@/lib/stores/authStore'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Logo } from "@/components/Logo"
 import {
   Sidebar,
@@ -37,13 +38,8 @@ const libraryItems = [
     icon: HomeIcon,
   },
   {
-    title: "Upload PDF",
-    url: "/dashboard", // TODO: Implement dedicated upload page if needed
-    icon: PlusCircleIcon,
-  },
-  {
     title: "Session History",
-    url: "/dashboard", // TODO: Implement session history page
+    url: "/dashboard/history",
     icon: HistoryIcon,
   },
 ]
@@ -55,8 +51,8 @@ const accountItems = [
     icon: CreditCardIcon,
   },
   {
-    title: "Settings",
-    url: "/dashboard", // TODO: Implement settings page
+    title: "Profile",
+    url: "/dashboard/profile",
     icon: SettingsIcon,
   },
 ]
@@ -93,10 +89,10 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
                   {libraryItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild>
-                        <a href={item.url}>
+                        <Link href={item.url}>
                           <item.icon />
                           <span>{item.title}</span>
-                        </a>
+                        </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -111,10 +107,10 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
                   {accountItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild>
-                        <a href={item.url}>
+                        <Link href={item.url}>
                           <item.icon />
                           <span>{item.title}</span>
-                        </a>
+                        </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}

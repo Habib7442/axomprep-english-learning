@@ -10,7 +10,7 @@ import Link from "next/link";
 const plans = [
   {
     name: "Free",
-    price: "₹0",
+    price: "$0",
     period: "forever",
     description: "Perfect for testing the waters",
     features: [
@@ -20,13 +20,14 @@ const plans = [
       "Basic progress tracking"
     ],
     cta: "Start Studying Free",
-    popular: false
+    popular: false,
+    comingSoon: false
   },
   {
     name: "Student",
-    price: "₹199",
+    price: "$15",
     period: "per month",
-    description: "Most popular for exam prep",
+    description: "Premium study experience",
     features: [
       "20 PDFs total",
       "30 min voice time/day",
@@ -35,13 +36,14 @@ const plans = [
       "Detailed mastery analytics"
     ],
     cta: "Upgrade to Student",
-    popular: true
+    popular: true,
+    comingSoon: true
   },
   {
     name: "Pro",
-    price: "₹499",
+    price: "$39",
     period: "per month",
-    description: "For serious researchers",
+    description: "For elite research & results",
     features: [
       "Unlimited PDFs",
       "2 hrs voice time/day",
@@ -50,7 +52,8 @@ const plans = [
       "Priority support"
     ],
     cta: "Go Pro",
-    popular: false
+    popular: false,
+    comingSoon: true
   }
 ];
 
@@ -67,7 +70,7 @@ export function PricingSection() {
         >
           <h2 className="text-3xl md:text-4xl font-black mb-6">
             <span className="text-white">Simple, Student-First</span>{" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <span className="text-primary">
               Pricing
             </span>
           </h2>
@@ -91,12 +94,6 @@ export function PricingSection() {
                   : "bg-card/50 border border-white/5"
               }`}
             >
-              <CurrentPlanBadge planName={plan.name} />
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-black text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
-                  Best Value
-                </div>
-              )}
               
               <div className="text-center mb-10">
                 <h3 className="text-xl font-bold mb-4 text-white">{plan.name}</h3>
@@ -132,7 +129,7 @@ export function PricingSection() {
             <p className="text-sm font-bold tracking-tight uppercase">Mission Statement</p>
           </div>
           <p className="text-muted-foreground text-lg italic max-w-2xl">
-            "Students in Tier 2 cities deserve the best AI tools too. We've priced IntegratePDF to be accessible for every learner across India."
+            "We've priced IntegratePDF to be accessible for elite learners worldwide. Professional tools for professional students."
           </p>
         </motion.div>
       </div>
@@ -140,35 +137,21 @@ export function PricingSection() {
   );
 }
 
-function CurrentPlanBadge({ planName }: { planName: string }) {
-  const { profile } = useAuthStore();
-  const isCurrentPlan = profile?.subscription_tier?.toLowerCase() === planName.toLowerCase();
-
-  if (!isCurrentPlan) return null;
-
-  return (
-    <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
-      <div className="bg-accent text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-xl animate-bounce">
-        Your Current Plan
-      </div>
-      <div className="w-1 h-3 bg-accent rounded-full" />
-    </div>
-  );
-}
 
 function PlanCTA({ plan }: { plan: any }) {
   const { user } = useAuthStore();
 
   const button = (
     <Button
+      disabled={plan.comingSoon}
       className={`w-full h-14 text-lg font-bold rounded-2xl transition-all duration-300 ${
         plan.popular
           ? "bg-primary text-black hover:bg-accent shadow-[0_0_20px_rgba(0,181,181,0.2)]"
           : "bg-white/5 border border-white/10 hover:bg-white/10 text-white"
-      }`}
+      } ${plan.comingSoon ? "opacity-50 grayscale cursor-not-allowed" : ""}`}
       variant={plan.popular ? "default" : "outline"}
     >
-      {plan.cta}
+      {plan.comingSoon ? "Coming Soon" : plan.cta}
     </Button>
   );
 

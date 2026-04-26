@@ -145,7 +145,7 @@ export function FileUploadZone({
             variant="outline"
             className="h-14 px-10 rounded-2xl border-primary/30 text-primary hover:bg-primary hover:text-black transition-all font-bold group pointer-events-none"
           >
-            <FileUp className="mr-2 h-5 w-5 group-hover:animate-bounce" />
+            <FileUp className="mr-2 h-5 w-5" />
             Select PDF File
           </Button>
           <p className="mt-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">

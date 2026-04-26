@@ -34,7 +34,7 @@ export function HowItWorksSection() {
         >
           <h2 className="text-3xl md:text-4xl font-black mb-6">
             <span className="text-white">Three Steps to</span>{" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <span className="text-primary">
               Mastery
             </span>
           </h2>
@@ -45,7 +45,7 @@ export function HowItWorksSection() {
  
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
           {/* Horizontal connecting line for desktop */}
-          <div className="hidden md:block absolute top-[68px] left-[20%] right-[20%] h-0.5 bg-gradient-to-r from-primary/10 via-primary/40 to-primary/10" />
+          <div className="hidden md:block absolute top-[68px] left-[20%] right-[20%] h-0.5 bg-primary/20" />
           
           {steps.map((step, index) => (
             <motion.div
