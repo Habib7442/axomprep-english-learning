@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     default: "IntegratePDF | Talk to your PDFs with Voice AI",
     template: "%s | IntegratePDF"
   },
-  description: "The world's first voice-first AI study platform. Don't just read your PDFs—talk to them. Master complex topics with Tutor, Panic, and Debate modes.",
+  description: "The voice-powered study platform. Stop reading your PDFs. Start talking to them. Master complex topics with Tutor, Panic, and Debate modes.",
   keywords: ["AI Study Tool", "Talk to PDF", "Voice AI", "Interactive Learning", "PDF Tutor", "Student Productivity", "Exam Preparation"],
   authors: [{ name: "IntegratePDF Team" }],
   creator: "IntegratePDF",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://www.integratepdf.com',
     title: 'IntegratePDF - The Voice-First AI Study Platform',
-    description: "Experience the future of studying. Upload any PDF and start a voice conversation with your documents.",
+    description: "The voice-powered study platform. Stop reading your PDFs. Start talking to them. Experience the future of studying.",
     siteName: 'IntegratePDF',
     images: [
       {
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'IntegratePDF - Talk to your PDFs',
-    description: "Don't just read your PDFs—talk to them. Voice-first AI study platform for the modern student.",
+    description: "The voice-powered study platform. Stop reading your PDFs. Start talking to them.",
     images: ['/og.png'],
   },
   robots: {
