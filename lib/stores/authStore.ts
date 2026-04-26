@@ -4,6 +4,7 @@ import { User } from '@supabase/supabase-js'
 
 interface AuthState {
   user: User | null
+  profile: { subscription_tier: string } | null
   isLoading: boolean
   setUser: (user: User | null) => void
   setLoading: (isLoading: boolean) => void
@@ -14,6 +15,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
+  profile: null,
   isLoading: true,
   setUser: (user) => set({ user }),
   setLoading: (isLoading) => set({ isLoading }),
@@ -63,9 +65,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { data: { session } } = await supabase.auth.getSession()
       
       if (session?.user) {
-        set({ user: session.user, isLoading: false })
+        // Fetch profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('subscription_tier')
+          .eq('id', session.user.id)
+          .single()
+
+        set({ user: session.user, profile: profile || { subscription_tier: 'free' }, isLoading: false })
       } else {
-        set({ user: null, isLoading: false })
+        set({ user: null, profile: null, isLoading: false })
       }
     } catch (error) {
       console.error('Error initializing auth state:', error)

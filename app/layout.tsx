@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AxomPrep English - AI-Powered English Learning",
-  description: "Master conversational English with our AI-powered platform. Practice anytime, get real-time feedback, and boost your confidence.",
+  title: "integratepdf.com - Talk to your PDFs with AI",
+  description: "The only platform where you don't read your PDF — you talk to it. Voice-first AI study platform for students.",
 };
 
 export default function RootLayout({
@@ -24,9 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
+        suppressHydrationWarning
       >
         <AuthProvider>
           {children}

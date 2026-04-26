@@ -81,24 +81,8 @@ export function SignupDialog({ children }: { children: React.ReactNode }) {
         throw new Error(authError.message)
       }
 
-      // If signup is successful, create user profile in users table
+      // If signup is successful, profile is created automatically via database trigger
       if (authData.user) {
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert({
-            id: authData.user.id,
-            email: data.email,
-            name: data.name,
-            subscription_tier: 'free',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-
-        if (insertError) {
-          console.error('Error creating user profile:', insertError)
-          // Note: We still consider signup successful even if profile creation fails
-        }
-
         setUser(authData.user)
         setSuccess(true)
         form.reset()
@@ -141,14 +125,14 @@ export function SignupDialog({ children }: { children: React.ReactNode }) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-white/60 dark:bg-black/60 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg rounded-xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#FF6B35]/10 to-[#FF914D]/10 dark:from-[#FF6B35]/20 dark:to-[#FF914D]/20 pointer-events-none"></div>
-        <DialogHeader className="relative z-10">
-          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-[#FF6B35] to-[#FF914D] bg-clip-text text-transparent">
-            Create an account
+      <DialogContent className="sm:max-w-[425px] bg-background/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl overflow-hidden p-8">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
+        <DialogHeader className="relative z-10 text-center mb-6">
+          <DialogTitle className="text-3xl font-black text-white tracking-tight">
+            Start <span className="text-primary italic">Talking</span>
           </DialogTitle>
-          <DialogDescription>
-            Enter your details below to create your account
+          <DialogDescription className="text-muted-foreground font-medium">
+            Create your account to master any PDF in minutes
           </DialogDescription>
         </DialogHeader>
         
@@ -180,7 +164,7 @@ export function SignupDialog({ children }: { children: React.ReactNode }) {
                     <Input 
                       placeholder="Your full name" 
                       {...field} 
-                      className="bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-white/30 dark:border-white/20 focus:border-[#FF6B35] focus:ring-[#FF6B35]"
+                      className="bg-white/5 border-white/10 focus:border-primary focus:ring-primary text-white placeholder:text-muted-foreground/50"
                     />
                   </FormControl>
                   <FormMessage />
@@ -198,7 +182,7 @@ export function SignupDialog({ children }: { children: React.ReactNode }) {
                     <Input 
                       placeholder="your@email.com" 
                       {...field} 
-                      className="bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-white/30 dark:border-white/20 focus:border-[#FF6B35] focus:ring-[#FF6B35]"
+                      className="bg-white/5 border-white/10 focus:border-primary focus:ring-primary text-white placeholder:text-muted-foreground/50"
                     />
                   </FormControl>
                   <FormMessage />
@@ -217,7 +201,7 @@ export function SignupDialog({ children }: { children: React.ReactNode }) {
                       type="password" 
                       placeholder="••••••••" 
                       {...field} 
-                      className="bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-white/30 dark:border-white/20 focus:border-[#FF6B35] focus:ring-[#FF6B35]"
+                      className="bg-white/5 border-white/10 focus:border-primary focus:ring-primary text-white placeholder:text-muted-foreground/50"
                     />
                   </FormControl>
                   <FormDescription>
@@ -228,13 +212,25 @@ export function SignupDialog({ children }: { children: React.ReactNode }) {
               )}
             />
             
-            <div className="relative my-4">
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="w-full bg-primary text-black hover:bg-accent font-black h-12 rounded-xl transition-all shadow-[0_0_15px_rgba(0,181,181,0.2)]"
+            >
+              {isLoading ? (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                'Create Account'
+              )}
+            </Button>
+            
+            <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <Separator className="border-white/30 dark:border-white/20" />
+                <Separator className="border-white/10" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white/60 dark:bg-black/60 px-2 text-muted-foreground backdrop-blur-sm rounded-full">
-                  Or continue with
+              <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
+                <span className="bg-background/80 px-4 text-muted-foreground backdrop-blur-sm rounded-full">
+                  Or use google
                 </span>
               </div>
             </div>
@@ -245,14 +241,14 @@ export function SignupDialog({ children }: { children: React.ReactNode }) {
                 variant="outline"
                 disabled={isLoading}
                 onClick={handleGoogleSignup}
-                className="w-full bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-white/30 dark:border-white/20 hover:bg-white/90 dark:hover:bg-black/90"
+                className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-white font-bold h-12 rounded-xl transition-all"
               >
                 {isLoading ? (
                   <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Icons.google className="mr-2 h-4 w-4" />
                 )}
-                Google
+                Continue with Google
               </Button>
             </div>
           </form>

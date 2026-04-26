@@ -27,10 +27,10 @@ export function Navigation() {
       ) : (
         <>
           <LoginDialog>
-            <Button variant="outline">Log In</Button>
+            <Button variant="ghost" className="text-white hover:text-primary transition-colors">Login</Button>
           </LoginDialog>
           <SignupDialog>
-            <Button>Sign Up</Button>
+            <Button className="bg-primary text-black hover:bg-accent font-bold px-6">Try Free</Button>
           </SignupDialog>
         </>
       )}

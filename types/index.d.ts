@@ -82,3 +82,9 @@ interface CompanionComponentProps {
   style: string;
   userId?: string; // Make userId optional
 }
+
+export interface TextSegment {
+  text: string;
+  segmentIndex: number;
+  wordCount: number;
+}

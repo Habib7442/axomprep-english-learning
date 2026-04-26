@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { Icons } from '@/components/icons'
 
-export default function AuthCallbackPage() {
+function AuthCallback() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { setUser } = useAuthStore()
@@ -43,7 +43,7 @@ export default function AuthCallbackPage() {
         
         // Check if user has completed onboarding
         const { data: userData, error: userError } = await supabase
-          .from('users')
+          .from('profiles')
           .select('current_level, goal, daily_goal')
           .eq('id', session.user.id)
           .single()
@@ -51,21 +51,15 @@ export default function AuthCallbackPage() {
         console.log('Auth callback: user data from Supabase', userData);
         console.log('Auth callback: user error from Supabase', userError);
         
-        // If user has no level set, redirect to onboarding
-        if (!userError && (!userData?.current_level || !userData?.goal)) {
-          console.log('Auth callback: redirecting to onboarding');
-          router.push('/onboarding')
+        // Check if we have a next parameter to redirect to a specific page
+        const next = searchParams.get('next')
+        if (next) {
+          console.log('Auth callback: redirecting to next parameter', next);
+          router.push(next)
         } else {
-          // Check if we have a next parameter to redirect to a specific page
-          const next = searchParams.get('next')
-          if (next) {
-            console.log('Auth callback: redirecting to next parameter', next);
-            router.push(next)
-          } else {
-            // Redirect to dashboard
-            console.log('Auth callback: redirecting to dashboard');
-            router.push('/dashboard')
-          }
+          // Redirect to dashboard
+          console.log('Auth callback: redirecting to dashboard');
+          router.push('/dashboard')
         }
       } else {
         // No session, redirect to home
@@ -84,5 +78,20 @@ export default function AuthCallbackPage() {
         <p className="text-lg">Completing authentication...</p>
       </div>
     </div>
+  )
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Icons.spinner className="h-8 w-8 animate-spin" />
+          <p className="text-lg">Loading...</p>
+        </div>
+      </div>
+    }>
+      <AuthCallback />
+    </Suspense>
   )
 }

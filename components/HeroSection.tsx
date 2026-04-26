@@ -4,137 +4,121 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuthStore } from "@/lib/stores/authStore";
+import { SignupDialog } from "./auth/SignupDialog";
 
 export function HeroSection() {
+  const { user } = useAuthStore();
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background to-muted/20 dark:from-background dark:to-muted/10" />
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
+      {/* Background Radial Glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--color-primary)_0%,_transparent_70%)] opacity-[0.03]" />
       
       {/* Main Content */}
-      <div className="relative z-10 container mx-auto px-4 py-16 md:py-24 lg:py-32">
-        <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-          {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-6"
-          >
-            <div className="relative h-20 w-20 rounded-full overflow-hidden mx-auto ring-4 ring-primary/10">
-              <Image 
-                src="/images/logo.png" 
-                alt="AxomPrep English Logo" 
-                fill
-                className="object-cover rounded-full"
-              />
-            </div>
-          </motion.div>
-          
+      <div className="relative z-10 container mx-auto px-4 pt-20 pb-16 md:py-24 lg:py-32 md:-mt-10">
+        <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-6"
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-8"
           >
             <span className="mr-2 h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-            AI-Powered English Learning
+            Voice-First AI Study Platform
           </motion.div>
-
+ 
           {/* Headline */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight mb-8 leading-[1.1]"
           >
-            <span className="bg-gradient-to-r from-[#FF6B35] to-[#FF914D] bg-clip-text text-transparent">
-              Speak English
-            </span>
+            <span className="text-white">Stop Reading Your PDFs.</span>
             <br />
-            <span className="text-foreground">With Confidence</span>
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Start Talking to Them.
+            </span>
           </motion.h1>
-
+ 
           {/* Subheading */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10"
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-lg md:text-xl text-muted-foreground max-w-3xl mb-12 leading-relaxed"
           >
-            Master conversational English with our AI-powered platform. Practice anytime, get real-time feedback, and boost your confidence for interviews and daily conversations.
+            Upload any PDF and have a real-time voice conversation with your notes. 
+            Ask questions, get quizzed, or debate topics to master your subjects 2x faster.
           </motion.p>
-
+ 
           {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md"
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex flex-col sm:flex-row gap-5 justify-center w-full max-w-lg mb-6"
           >
-            <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-[#FF6B35] to-[#FF914D] text-white hover:from-[#FF844B] hover:to-[#FFB088] shadow-lg h-12 px-8 text-base font-medium transition-all duration-300 hover:shadow-xl"
-              asChild
-            >
-              <Link href="/signup">Start Free Trial</Link>
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="h-12 px-8 text-base font-medium backdrop-blur-md bg-white/60 dark:bg-input/30 border-input hover:bg-accent hover:text-accent-foreground transition-all duration-300"
-              asChild
-            >
-              <Link href="#features">Learn More</Link>
-            </Button>
+            {user ? (
+              <Button 
+                size="lg" 
+                className="bg-primary text-black hover:bg-accent shadow-[0_0_20px_rgba(0,181,181,0.3)] h-14 px-10 text-lg font-bold transition-all duration-300 hover:scale-105 active:scale-95 w-full sm:w-auto"
+                asChild
+              >
+                <Link href="/dashboard">Talk to Your PDF — It's Free</Link>
+              </Button>
+            ) : (
+              <SignupDialog>
+                <Button 
+                  size="lg" 
+                  className="bg-primary text-black hover:bg-accent shadow-[0_0_20px_rgba(0,181,181,0.3)] h-14 px-10 text-lg font-bold transition-all duration-300 hover:scale-105 active:scale-95 w-full sm:w-auto"
+                >
+                  Talk to Your PDF — It's Free
+                </Button>
+              </SignupDialog>
+            )}
           </motion.div>
-
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="mt-16 grid grid-cols-3 gap-8 max-w-lg"
+          
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="text-sm text-muted-foreground/60 mb-16"
           >
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-primary">90%</div>
-              <div className="text-sm md:text-base text-muted-foreground">Confidence Boost</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-primary">2x</div>
-              <div className="text-sm md:text-base text-muted-foreground">Faster Learning</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-primary">₹399</div>
-              <div className="text-sm md:text-base text-muted-foreground">Per Month</div>
+            No credit card. No app download. Works in your browser.
+          </motion.p>
+ 
+          {/* Looping Demo Placeholder */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="w-full max-w-4xl rounded-2xl border border-primary/20 bg-card/50 aspect-video flex items-center justify-center relative overflow-hidden group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/5 group-hover:to-primary/10 transition-colors" />
+            <div className="flex flex-col items-center gap-4 text-primary/40 group-hover:text-primary/60 transition-colors">
+              <div className="flex gap-1 items-end h-12">
+                {[...Array(12)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    animate={{ height: [10, 40, 10] }}
+                    transition={{ 
+                      repeat: Infinity, 
+                      duration: 1 + Math.random(),
+                      delay: Math.random() 
+                    }}
+                    className="w-1.5 bg-current rounded-full"
+                  />
+                ))}
+              </div>
+              <p className="font-medium tracking-widest text-xs uppercase">Voice Interface Active</p>
             </div>
           </motion.div>
         </div>
       </div>
 
-      {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 0.5 }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-      >
-        <div className="flex flex-col items-center text-muted-foreground">
-          <span className="text-sm mb-2">Scroll to explore</span>
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-            className="w-6 h-10 rounded-full border-2 border-muted-foreground flex justify-center p-1"
-          >
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-              className="w-2 h-2 rounded-full bg-muted-foreground"
-            />
-          </motion.div>
-        </div>
-      </motion.div>
     </section>
   );
 }

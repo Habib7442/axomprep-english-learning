@@ -6,8 +6,8 @@ import { NavItems } from "@/components/NavItems";
 import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-import Image from "next/image";
 import { Navigation } from "@/components/Navigation";
+import { Logo } from "@/components/Logo";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -22,23 +22,10 @@ export function Navbar() {
       <div className="container flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="relative h-10 w-10 rounded-full overflow-hidden ring-2 ring-primary/20">
-              <Image 
-                src="/images/logo.png" 
-                alt="AxomPrep English Logo" 
-                fill
-                className="object-cover rounded-full"
-              />
-            </div>
-            <span className="bg-gradient-to-r from-[#FF6B35] to-[#FF914D] bg-clip-text text-xl font-bold text-transparent">
-              AxomPrep
-            </span>
-            <span className="text-sm font-medium text-muted-foreground">English</span>
-          </Link>
+          <Logo />
         </motion.div>
 
         {/* Desktop Navigation - Centered */}

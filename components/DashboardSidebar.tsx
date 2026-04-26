@@ -3,17 +3,17 @@
 import * as React from "react"
 import { 
   BookOpenIcon, 
-  MicIcon, 
-  UserIcon, 
   SettingsIcon,
-  BarChartIcon,
   HomeIcon,
-  LogOutIcon
+  LogOutIcon,
+  PlusCircleIcon,
+  CreditCardIcon,
+  HistoryIcon
 } from "lucide-react"
 import { useAuthStore } from '@/lib/stores/authStore'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Button } from "@/components/ui/button"
+import { Logo } from "@/components/Logo"
 import {
   Sidebar,
   SidebarContent,
@@ -30,38 +30,33 @@ import {
 } from "@/components/ui/sidebar"
 
 // Menu items for the sidebar
-const menuItems = [
+const libraryItems = [
   {
-    title: "Dashboard",
+    title: "My Library",
     url: "/dashboard",
     icon: HomeIcon,
   },
   {
-    title: "Practice Interview",
-    url: "/practice-interview",
-    icon: MicIcon,
+    title: "Upload PDF",
+    url: "/dashboard",
+    icon: PlusCircleIcon,
   },
   {
-    title: "Daily Conversation",
-    url: "/practice-conversation",
-    icon: UserIcon,
-  },
-  {
-    title: "Progress",
-    url: "/progress",
-    icon: BarChartIcon,
+    title: "Session History",
+    url: "/dashboard",
+    icon: HistoryIcon,
   },
 ]
 
-const userItems = [
+const accountItems = [
   {
-    title: "Profile",
-    url: "/profile",
-    icon: UserIcon,
+    title: "Pricing & Plans",
+    url: "/pricing",
+    icon: CreditCardIcon,
   },
   {
     title: "Settings",
-    url: "/settings",
+    url: "/dashboard",
     icon: SettingsIcon,
   },
 ]
@@ -77,9 +72,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
     if (error) {
       console.error('Error signing out:', error)
     } else {
-      // Update our auth store
       useAuthStore.getState().setUser(null)
-      // Redirect to home
       router.push('/')
     }
   }
@@ -88,24 +81,16 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <div className="flex w-full">
         <Sidebar>
-          <SidebarHeader>
-            <div className="flex items-center gap-2">
-              <div className="bg-gradient-to-r from-[#FF6B35] to-[#FF914D] p-2 rounded-lg">
-                <MicIcon className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold">AxomPrep</h2>
-                <p className="text-xs text-muted-foreground">English Practice</p>
-              </div>
-            </div>
+          <SidebarHeader className="p-4">
+            <Logo showTagline={false} />
           </SidebarHeader>
           
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Learning</SidebarGroupLabel>
+              <SidebarGroupLabel>Your Library</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {menuItems.map((item) => (
+                  {libraryItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild>
                         <a href={item.url}>
@@ -123,7 +108,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
               <SidebarGroupLabel>Account</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {userItems.map((item) => (
+                  {accountItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild>
                         <a href={item.url}>
@@ -148,9 +133,9 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
               </SidebarMenuItem>
             </SidebarMenu>
             
-            <div className="p-4 text-xs text-muted-foreground">
-              <p>Welcome, {user?.email?.split('@')[0] || 'User'}</p>
-              <p className="mt-1">Ready to practice English?</p>
+            <div className="p-4 text-xs text-muted-foreground border-t border-input/10">
+              <p className="font-medium text-foreground">{user?.email?.split('@')[0] || 'Student'}</p>
+              <p className="mt-1 opacity-70">Ready to talk to a PDF?</p>
             </div>
           </SidebarFooter>
         </Sidebar>
@@ -164,4 +149,4 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
       </div>
     </SidebarProvider>
   )
-}
+}

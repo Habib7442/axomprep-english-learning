@@ -6,51 +6,46 @@ import { Star, Quote } from "lucide-react";
 const testimonials = [
   {
     name: "Rahul Kumar",
-    role: "Engineering Student",
-    company: "Cotton University",
-    content: "I was terrified of speaking English. After just 2 months with AxomPrep, I practiced every day with the AI tutor. Yesterday, I got placed at TCS with a ₹3.6 LPA package! The AI debate feature really helped me think quickly.",
-    avatar: "/avatars/rahul.jpg",
+    role: "UPSC Aspirant",
+    company: "Delhi",
+    content: "I was drowning in Laxmikanth. Debate Mode forced me to defend my notes against the AI. I cleared my Prelims! It's like having a 24/7 study partner who knows every page of my textbook.",
     rating: 5
   },
   {
-    name: "Priya Kalita",
-    role: "Job Seeker",
-    company: "Jorhat",
-    content: "As a girl from a small town in Assam, I never thought I could work in Bangalore. My English was so weak. AxomPrep's voice practice made me confident. The best part? I could practice anytime without feeling judged. Today, I'm working at a startup in Bangalore earning ₹6 LPA!",
-    avatar: "/avatars/priya.jpg",
+    name: "Sneha Das",
+    role: "Medical Student",
+    company: "Kolkata",
+    content: "Exam Panic Mode is a life-saver. I upload my 50-page histology notes 2 hours before the viva, and the AI drills me until I know every cell. Simply incredible for high-pressure situations.",
     rating: 5
   },
   {
-    name: "Amit Deka",
-    role: "Working Professional",
-    company: "Dibrugarh",
-    content: "I used AxomPrep for 4 months before my civil services interview. The debate mode trained me to structure arguments quickly. I cleared APSC prelims and mains. Now preparing for the final interview with AxomPrep's Pro tier. This app is a game-changer for Assamese students.",
-    avatar: "/avatars/amit.jpg",
+    name: "Amit Sharma",
+    role: "B.Tech Student",
+    company: "Bengaluru",
+    content: "I used to hate reading dry technical papers. Now I just 'talk' to them in Tutor Mode. Concepts that took 3 hours to read now take 30 mins to 'discuss' and master.",
     rating: 5
   }
 ];
 
 export function TestimonialsSection() {
   return (
-    <section id="testimonials" className="py-20 bg-muted/10 dark:bg-muted/5">
+    <section id="testimonials" className="py-12 bg-muted/5 relative">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-[#FF6B35] to-[#FF914D] bg-clip-text text-transparent">
-              Success Stories
-            </span>
+          <h2 className="text-3xl md:text-4xl font-black mb-6 text-white">
+            Trusted by <span className="text-primary tracking-tight">thousands</span> of students
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of students who transformed their English skills and career prospects
+            From UPSC aspirants to Medical students, IntegratePDF is changing how India studies.
           </p>
         </motion.div>
-
+ 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <motion.div
@@ -59,27 +54,30 @@ export function TestimonialsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ y: -5 }}
-              className="bg-card rounded-xl p-6 border border-border/40 backdrop-blur-md hover:shadow-lg transition-all duration-300"
+              whileHover={{ y: -10 }}
+              className="group bg-card/50 rounded-3xl p-8 border border-white/5 hover:border-primary/30 transition-all duration-500 relative overflow-hidden"
             >
-              <div className="flex items-center mb-4">
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <Quote className="h-16 w-16 text-primary" />
+              </div>
+              
+              <div className="flex items-center gap-1 mb-6">
                 {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-primary text-primary" />
+                  <Star key={i} className="h-4 w-4 fill-primary text-primary" />
                 ))}
               </div>
               
-              <p className="text-muted-foreground mb-6 relative">
-                <Quote className="absolute -top-2 -left-2 h-5 w-5 text-primary/20" />
-                <span className="relative z-10">{testimonial.content}</span>
+              <p className="text-lg text-muted-foreground mb-8 leading-relaxed font-medium">
+                "{testimonial.content}"
               </p>
               
-              <div className="flex items-center">
-                <div className="bg-gradient-to-r from-[#FF6B35] to-[#FF914D] w-12 h-12 rounded-full flex items-center justify-center text-white font-bold mr-4 shadow-md">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary text-black flex items-center justify-center font-black text-xl shadow-[0_0_15px_rgba(0,181,181,0.2)]">
                   {testimonial.name.charAt(0)}
                 </div>
                 <div>
-                  <h4 className="font-semibold">{testimonial.name}</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <h4 className="font-bold text-white text-lg">{testimonial.name}</h4>
+                  <p className="text-sm text-muted-foreground font-medium">
                     {testimonial.role}, {testimonial.company}
                   </p>
                 </div>
@@ -90,4 +88,4 @@ export function TestimonialsSection() {
       </div>
     </section>
   );
-}
+}
